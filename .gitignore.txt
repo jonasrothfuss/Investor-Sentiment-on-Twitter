@@ -1,0 +1,4 @@
+# directories to ignore
+Literature/
+Resources/
+TwitterDb/
