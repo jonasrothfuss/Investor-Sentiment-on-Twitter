@@ -1,0 +1,123 @@
+\documentclass[a4paper,12pt]{article}
+%   Standards
+    \usepackage[latin1]{inputenc}
+    \usepackage{fontenc}
+%   Bibliography style
+%    \usepackage{chicago}
+
+% German language support
+  % \usepackage{german}
+  % \usepackage{bibgerm}
+	 \usepackage[ngerman]{babel}
+
+%   Mathematics
+    \usepackage{amsmath}
+    \usepackage{amssymb}
+    \usepackage{amsthm}
+    \usepackage{amscd}
+    \usepackage{amsfonts}
+
+%   Formatting
+    \usepackage{graphicx}   %Graphics
+    \usepackage{booktabs}   %Tables
+    \usepackage{a4}         %Page setting
+    \usepackage{fancyhdr}   %Headers and footers
+    \usepackage{longtable}  %Tabellen l\"{a}nger als eine Seite
+    \usepackage{subfigure}
+    \usepackage{enumerate}
+    \usepackage{epsfig}
+    \usepackage{layout}
+    \usepackage{tabularx}
+    \usepackage{array}
+    \usepackage{wasysym}
+    \usepackage{fancybox}
+    \usepackage{color}
+    \usepackage{rotating}
+    \usepackage{slashbox}% kann in Tabelle diagonalen Strich darstellen
+    \usepackage{multirow}
+    \usepackage{natbib}		% Anpassung
+		%\usepackage{jurabib}
+
+    %Calculation: 1Inch = 2.54 cm
+        \setlength{\oddsidemargin}{0.5cm}
+        \setlength{\textwidth}{15,5cm}
+        \setlength{\textheight}{23cm}
+
+    %Chapter pages
+        \pagestyle{headings}
+%        \pagestyle{fancy}
+%        \lhead{\emph{COLLATERALIZED DEBT OBLIGATIONS}}
+%        \chead{}
+%        \rhead{\thepage}
+%        \lfoot{}
+%        \cfoot{}
+%        \rfoot{}
+%        \renewcommand{\headrulewidth}{0pt}
+%        \renewcommand{\footrulewidth}{0pt}
+
+    % Chapter title pages
+        \fancypagestyle{plain}{
+        \fancyhf{}
+        \fancyhead[L]{\emph{Titel der Arbeit}}
+        \fancyhead[R]{\thepage}
+        \fancyfoot[L]{}
+        \fancyfoot[R]{}
+        \renewcommand{\headrulewidth}{0pt}
+        \renewcommand{\footrulewidth}{0pt}}
+        \renewcommand{\baselinestretch}{1.3}
+				\let\footnoteOld\footnote		% Zeilenabstand in der Fußnote wird zurückgesetzt
+				\renewcommand{\footnote}[1]{\linespread{1.0}\footnoteOld{#1}\linespread{1.2}}		% Zeilenabstand in der Fußnote wird gesetzt
+
+\begin{document}
+
+\begin{titlepage}
+\topskip0cm
+\begin{center}
+{\Large Karlsruher Institut für Technologie\\[0.4cm]
+Institut f\"{u}r Finanzwirtschaft, Banken und Versicherungen\\[0.3cm]
+Lehrstuhl Financial Engineering und Derivate\\[0.3cm]
+Prof. Dr. Marliese Uhrig-Homburg}\\[3.5cm]
+{\large Masterarbeit}\\[1.5cm]
+{\Huge Titel des Themas}\\[8cm]
+\end{center}
+\renewcommand{\baselinestretch}{1.2}\small\normalsize
+\begin{tabular}{ll}
+        Verfasser:  & Vorname Name\\
+                    & Stra{\ss}e + Hausnr\\
+                    & PLZ Ort\\
+										& E-Mail: e-mail Adresse\\\\
+        \multicolumn{2}{l}{Karlsruhe, den xx. September 20xx}
+    \end{tabular}
+    \vfill
+\end{titlepage}
+
+\setcounter{page}{1}\renewcommand{\thepage}{\roman{page}}%
+\tableofcontents %
+\newpage
+% \listoffigures \addcontentsline{toc}{chapter}{List of Figures}% in Englisch
+\listoffigures \addcontentsline{toc}{section}{Abbildungsverzeichnis} % in Deutsch
+% \listoftables \addcontentsline{toc}{chapter}{List of Tables}% in Englisch
+\newpage
+\listoftables \addcontentsline{toc}{section}{Tabellenverzeichnis} % in Deutsch
+\newpage
+\setcounter{page}{1}\renewcommand{\thepage}{\arabic{page}}
+
+\include{Einleitung}
+
+\include{Kapitel2}
+
+%% Apendix
+%\addcontentsline{toc}{section}{Bibliography} \nocite{*}
+\newpage
+\addcontentsline{toc}{section}{\bibname} \nocite{*} % Deutsch
+\bibliographystyle{apalike_ger_manipulation}
+\bibliography{Abschluss_Bib}
+\newpage
+\begin{appendix}
+\include{Anhang_A}
+\end{appendix}
+\newpage \thispagestyle{empty}
+
+\include{Erklaerung}
+
+\end{document}
