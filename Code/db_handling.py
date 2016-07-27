@@ -1,8 +1,9 @@
 from pymongo import MongoClient
-import datetime
 import numpy as np
 import time
-from dateutil.parser import parse
+from tweet import Tweet
+from tweets_statistic import Tweets_Statistic
+
 
 def print_dict(dict):
 	for key in dict.keys():
@@ -43,30 +44,6 @@ def db_collection_as_array(db_collection):
     cursor.close()
     return tweets_array
 
-def update_stock_symbol_statistic(stock_symbol_tally, tweet):
-	for s in stock_symbols(tweet):
-		if s in stock_symbol_tally: #stock symbol already exists in tally
-			stock_symbol_tally[s] += 1
-		else: #add stock symbol to tally
-			stock_symbols[s] = 1
-
-def generate_tweet_statistic(tweets):
-	number_of_tweets = len(tweets)
-	mean_follower_count, mean_number_of_stock_symbols, mean_number_of_urls = 0
-	stock_symbol_tally = {}
-	for t in tweets:
-		mean_follower_count += follower_count(t)
-		mean_number_of_urls += number_of_urls(t)
-		stock_symbol_tally = update_stock_symbol_statistic(stock_symbol_tally, t)
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
 	#connect to db_collection
 	tweets_db_collection = connect_twitter_db()
@@ -74,7 +51,12 @@ if __name__ == '__main__':
 	t1 = tweets_db_collection.find()[1]
 	t2 = tweets_db_collection.find()[20000]
 
-	print(number_of_urls(t1))
-	print(number_of_urls(t2))
+	tweet1 = Tweet(t1)
+	tweet2 = Tweet(t2)
+	print(tweet1)
 
-	print_dict(t2)
+
+	stat = Tweets_Statistic()
+	stat.add_tweet_to_statistic(tweet1)
+	stat.add_tweet_to_statistic(tweet2)
+	print(stat)

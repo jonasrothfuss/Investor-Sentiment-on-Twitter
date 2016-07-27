@@ -1,6 +1,5 @@
 from dateutil.parser import parse
 
-
 def stock_symbols(tweet_dict):
 	symbols = []
 	for s in tweet_dict['entities']['symbols']:
@@ -12,7 +11,7 @@ class Tweet:
 	def __init__(self, tweet_dict):
 		self.text = tweet_dict["text"]
 		self.created_at = parse(tweet_dict['created_at'])
-		self.language = tweet_dict['lan']
+		self.language = tweet_dict['lang']
 		self.retweet_count = tweet_dict["retweet_count"]
 		self.urls = tweet_dict['entities']['urls']
 		self.hashtags = tweet_dict['entities']['hashtags']
