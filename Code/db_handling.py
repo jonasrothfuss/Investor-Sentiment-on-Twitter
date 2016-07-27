@@ -15,18 +15,6 @@ def connect_twitter_db():
 	print("Collection Size: " + str(db.command("collstats", "finance_collection")["storageSize"]/1000000.0) + " MB")
 	return db.finance_collection
 
-def tweet_datetime(tweet):
-	return parse(tweet['created_at'])
-
-def follower_count(tweet):
-	return tweet['user']['followers_count']
-
-def stock_symbols(tweet):
-	symbols = []
-	for s in tweet['entities']['symbols']:
-		symbols.append(s['text'])
-	return symbols
-
 def random_tweets_sample(collection, sample_size):
 	#generate random sample of indexes
 	collection_size = collection.find().count()
@@ -54,9 +42,6 @@ def db_collection_as_array(db_collection):
             timestamp = time.clock()
     cursor.close()
     return tweets_array
-
-def number_of_urls(tweet):
-	return len(tweet['entities']['urls'])
 
 def update_stock_symbol_statistic(stock_symbol_tally, tweet):
 	for s in stock_symbols(tweet):
