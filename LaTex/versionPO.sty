@@ -1,0 +1,73 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% You need Rainer Schoepf's verbatim.sty to use this!!
+%
+% Version control macros. These let you define environments whose contents
+% will be optionally added to or deleted from the text when you run LaTeX.
+% Usage: place either of the following near the start of your file:
+%     \includeversion{NAME}
+%     \excludeversion{NAME}
+% Here, "NAME" is any name you choose. The first one indicates that text
+% between \begin{NAME} and \end{NAME} will be processed in the normal way.
+% The second indicates that text between \begin{NAME} and \end{NAME} will
+% be totally deleted.
+% These command automatically declare the inverted version not-NAME.
+%
+% NOTE:
+% You cannot use the version environments inside another environment,
+% inside a command or in an argument to another command. You can make a
+% limited use of a version inside an environment by using \NAME and
+% \endNAME rather than \begin{NAME} and \end{NAME}. E.g.
+%   \newenvironment{example}{...\myversion...}{\endmyversion} where the
+% following would fail:
+%   \newenvironment{example}{...\begin{myversion}...}{\end{myversion}}
+%
+% To alleviate these problems a bit, foreach version NAME also a command
+% \ifNAME is defined such that \ifNAME{yes-part}{no-part} selects either
+% yes-part or no-part depending on whether the version is included or
+% excluded. The \ifNAME command may be used everywhere but the environments
+% are preferred with large amounts of text. Also the parameters of \ifNAME
+% are not included in a group, so you can make global declarations in them.
+% The \ifNAME command is fragile if either of its arguments is fragile.
+% Note: the \ifNAME command is only usable if NAME consists of letters only.
+%
+% A ``comment'' environment has already been pre-defined for you with 
+% \excludeversion{comment}; you can NOT override this one.
+%
+% You can define environments for as many versions as you want. 
+%
+% Example: 
+%   \includeversion{abridged}
+%   \ifabridged{\large}{\small}
+%   Text for the
+%   \begin{abridged} 
+%      short
+%   \end{abridged}
+%   \begin{not-abridged}
+%      long and really longwinded, opaque and boring
+%   \end{not-abridged}
+%   version of the paper. Punctuation works correctly\begin{not-abridged}
+%   because sphack is used\end{not-abridged}.
+%   \begin{comment} This is deleted by default. \end{comment}
+%
+%  Piet van Oostrum -- <piet@cs.ruu.nl>
+%  Idea based on a style file by Stephen Bellantoni, implementation based
+%  on verbatim.sty by Rainer Schoepf <SCHOEPF@SC.ZIB-Berlin.DE>.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\@ifundefined{verbatim@@@}{\input{verbatim.sty}}{}
+
+\def\includeversion#1{%
+  \expandafter\def\csname #1\endcsname{}%
+  \expandafter\def\csname end#1\endcsname{}%
+  \expandafter\let\csname not-#1\endcsname\comment
+  \expandafter\let\csname endnot-#1\endcsname\endcomment
+  \expandafter\def\csname if#1\endcsname##1##2{##1}
+}
+\def\excludeversion#1{%
+  \expandafter\let\csname #1\endcsname\comment
+  \expandafter\let\csname end#1\endcsname\endcomment
+  \expandafter\def\csname not-#1\endcsname{}%
+  \expandafter\def\csname endnot-#1\endcsname{}%
+  \expandafter\def\csname if#1\endcsname##1##2{##2}
+}
