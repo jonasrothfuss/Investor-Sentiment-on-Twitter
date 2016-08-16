@@ -9,6 +9,7 @@ def stock_symbols(tweet_dict):
 class Tweet:
 
 	def __init__(self, tweet_dict):
+		self.id = tweet_dict["_id"]
 		self.text = tweet_dict["text"]
 		self.created_at = parse(tweet_dict['created_at'])
 		self.language = tweet_dict['lang']
@@ -30,4 +31,3 @@ class Tweet:
 		s += "Text: " + str(self.text) + "\n"
 		s += "Symbols: " + str(self.symbols) + "\n"
 		return s
-
