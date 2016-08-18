@@ -1,5 +1,6 @@
 from dateutil.parser import parse
-
+from tokenizer import tokenize, preprocess
+import re
 
 def stock_symbols(tweet_dict):
     symbols = []
@@ -11,14 +12,24 @@ def stock_symbols(tweet_dict):
 def text_w_replaced_entities(tweet_dict):
     text = tweet_dict["text"]
     entities_for_replacement = {}
+
     #URLS
+    urls = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+    for u in urls:
+        entities_for_replacement[u] = '<url>'
+    '''
     if "urls" in tweet_dict["entities"].keys():
         for u in tweet_dict["entities"]["urls"]:
             entities_for_replacement[(tweet_dict["text"][int(u['indices'][0]):int(u['indices'][1])])] = '<url>'
+    '''
     #Users
     if "user_mentions" in tweet_dict["entities"].keys():
         for u in tweet_dict["entities"]["user_mentions"]:
             entities_for_replacement[(tweet_dict["text"][int(u['indices'][0]):int(u['indices'][1])])] = '<user>'
+    #Symbols
+    if "symbols" in tweet_dict["entities"].keys():
+        for u in tweet_dict["entities"]["symbols"]:
+            entities_for_replacement[(tweet_dict["text"][int(u['indices'][0]):int(u['indices'][1])])] = ('<' + (tweet_dict["text"][(int(u['indices'][0])+1):int(u['indices'][1])])) + '>'
     #replace entities
     for entity, replacement in entities_for_replacement.items():
         text = text.replace(entity, replacement)
@@ -36,6 +47,7 @@ class Tweet:
         self.symbols = stock_symbols(tweet_dict)
         self.follower_count = tweet_dict['user']['followers_count']
         self.user = tweet_dict['user']
+        self.text_tokens = preprocess(self.text)
 
     def number_of_urls(self):
         return len(self.urls)
