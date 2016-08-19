@@ -1,4 +1,4 @@
-from dateutil.parser import parse
+import datetime
 from tokenizer import tokenize, preprocess
 import re
 
@@ -39,7 +39,8 @@ class Tweet:
     def __init__(self, tweet_dict):
         self.id = tweet_dict["_id"]
         self.text = text_w_replaced_entities(tweet_dict)
-        self.created_at = parse(tweet_dict['created_at'])
+        self.created_at = datetime.datetime.utcfromtimestamp(int(tweet_dict["timestamp_ms"])//1000)
+        self.timestamp = int(tweet_dict["timestamp_ms"])
         self.language = tweet_dict['lang']
         self.retweet_count = tweet_dict["retweet_count"]
         self.urls = tweet_dict['entities']['urls']
