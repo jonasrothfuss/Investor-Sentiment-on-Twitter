@@ -10,6 +10,7 @@ from sentiment import sentiment
 from tweets_statistic import Tweets_Statistic
 import pickle
 from pprint import pprint
+from bson.objectid import ObjectId
 
 
 def print_dict(dict):
@@ -123,29 +124,31 @@ def load_tweets_from_file(file_path):
             tweet_array.append(pickle.load(f))
     return tweet_array
 
-def convert_db_timestamps_to_int(collection, as_bulk = False):
+def convert_db_timestamps_to_int(collection, bulk_size = 1000):
     cursor = collection.find()
     count = cursor.count()
     n = 0
-    if not as_bulk:
-        for tweet in cursor:
-            if n % 1000 == 0:
-                print(n)
-            id = tweet["id"]
-            timestamp = int(tweet["timestamp_ms"])
-            collection.update_one({"id": id}, {'$set': {'timestamp_ms': timestamp}})
-            n += 1
-    else:
+    number_updates_pending = 0
+    bulk = collection.initialize_unordered_bulk_op()
+    for tweet in cursor:
         if n % 1000 == 0:
-            bulk = collection.initialize_ordered_bulk_op()
-        id = tweet["id"]
-        timestamp = int(tweet["timestamp_ms"])
-        bulk.find({"id": id}).update({'$set': {'timestamp_ms': timestamp}})
-        if n == (count-1) or (n % 10 == 9):
-            print("Execute Bulk Operation")
-            result = bulk.execute()
-            pprint(result)
-            print("----> N = " + str(n))
+            print("Tweets processed: " + str(n))
+        try:
+            id = tweet["id"]
+            ts = tweet["timestamp_ms"]
+            if (type(ts) is str):
+                ts_int = int(ts)
+                bulk.find({"id": id}).update({'$set': {'timestamp_ms': ts_int}})
+                number_updates_pending += 1
+                print("Items in bulk: " + str(number_updates_pending))
+        except Exception as e:
+            print(e)
+            collection.delete_one({"_id": tweet['_id']})
+            print("Object deleted")
+        if number_updates_pending >= bulk_size or n == count - 1:
+            pprint(bulk.execute())
+            bulk = collection.initialize_unordered_bulk_op()
+            number_updates_pending = 0
         n += 1
 
 def tweet_query(collection, start_date, end_date, symbol):
@@ -157,18 +160,16 @@ if __name__ == '__main__':
     tweets_db_collection = get_tweets_collection(db)
     prices_collection = get_prices_collection(db)
 
-    convert_db_timestamps_to_int(tweets_db_collection)
+    convert_db_timestamps_to_int(tweets_db_collection, 20)
 
-    '''
-    t1 = tweets_db_collection.find()[1]
-    t2 = tweets_db_collection.find()[20000]
-
-    tweet1 = Tweet(t1)
-    tweet2 = Tweet(t2)
-    print(tweet1)
-
-    stat = Tweets_Statistic()
-    stat.add_tweet_to_statistic(tweet1)
-    stat.add_tweet_to_statistic(tweet2)
-    print(stat)
-    '''
+'''
+    tweet = tweets_db_collection.find()[500000]
+    bulk = tweets_db_collection.initialize_ordered_bulk_op()
+    id = tweet["id"]
+    timestamp = int(tweet["timestamp_ms"])
+    bulk.find({"id": id}).update({'$set': {'timestamp_ms': timestamp}})
+    print("Bulk execute")
+    result = bulk.execute()
+    pprint(result)
+    print("Update Executed")
+'''
