@@ -3,20 +3,17 @@ import numpy as np
 import time
 import datetime
 import os
-import bson
 from tweet import Tweet
 from parser import Parser
 from sentiment import sentiment
 from tweets_statistic import Tweets_Statistic
 import pickle
 from pprint import pprint
-from bson.objectid import ObjectId
-
+import calendar
 
 def print_dict(dict):
     for key in dict.keys():
         print(key + ": " + str(dict[key]))
-
 
 # returns collection object from MongoDB
 def connect_twitter_db():
@@ -151,8 +148,16 @@ def convert_db_timestamps_to_int(collection, bulk_size = 1000):
             number_updates_pending = 0
         n += 1
 
-def tweet_query(collection, start_date, end_date, symbol):
-    return collection.find({"timestamp_ms": {'$gte': start_date, '$lt': end_date}})
+def tweet_query(collection, start_datetime, end_datetime):
+    start_ts = datetime_to_ms_utc_timestamp(start_datetime)
+    end_ts = datetime_to_ms_utc_timestamp(end_datetime)
+    print(start_ts)
+    print(end_ts)
+    return collection.find({"timestamp_ms": {'$gte': start_ts, '$lt': end_ts}})
+
+def datetime_to_ms_utc_timestamp(dt):
+    return calendar.timegm(dt.utctimetuple()) * 1000
+
 
 if __name__ == '__main__':
     # connect to db_collection
@@ -160,16 +165,12 @@ if __name__ == '__main__':
     tweets_db_collection = get_tweets_collection(db)
     prices_collection = get_prices_collection(db)
 
-    convert_db_timestamps_to_int(tweets_db_collection, 20)
+    cursor = tweets_db_collection.find()
+    print(cursor[10000]["timestamp_ms"])
+    t1 = Tweet(cursor[10000])
 
-'''
-    tweet = tweets_db_collection.find()[500000]
-    bulk = tweets_db_collection.initialize_ordered_bulk_op()
-    id = tweet["id"]
-    timestamp = int(tweet["timestamp_ms"])
-    bulk.find({"id": id}).update({'$set': {'timestamp_ms': timestamp}})
-    print("Bulk execute")
-    result = bulk.execute()
-    pprint(result)
-    print("Update Executed")
-'''
+    start_dt = datetime.datetime(2015, 10, 22, 0, 0, 0)
+    end_dt = datetime.datetime(2015, 10, 23, 0, 0, 0)
+
+    q1 = tweet_query(tweets_db_collection, start_dt, end_dt)
+    print(q1.count())
