@@ -10,6 +10,9 @@ from tweets_statistic import Tweets_Statistic
 import pickle
 from pprint import pprint
 import calendar
+from dateutil import parser
+import pandas as pd
+import matplotlib.pyplot as plt
 
 def print_dict(dict):
     for key in dict.keys():
@@ -158,6 +161,18 @@ def tweet_query(collection, start_datetime, end_datetime):
 def datetime_to_ms_utc_timestamp(dt):
     return calendar.timegm(dt.utctimetuple()) * 1000
 
+def datetime_from_str(dt_str):
+    return parser.parse(dt_str)
+
+def stock_prices_as_panda_df(collection, symbol):
+    cursor = collection.find({"ticker": symbol})
+    prices = []
+    dts = []
+    for p in cursor:
+        prices.append(float(p['price']))
+        dts.append(datetime_from_str(p['datetime_utc']))
+    panda_frame = pd.DataFrame(np.transpose(np.array([dts, prices])), columns=['time', 'price'])
+    return panda_frame.sort_values(by = 'time')
 
 if __name__ == '__main__':
     # connect to db_collection
@@ -165,6 +180,7 @@ if __name__ == '__main__':
     tweets_db_collection = get_tweets_collection(db)
     prices_collection = get_prices_collection(db)
 
+    '''
     cursor = tweets_db_collection.find()
     print(cursor[10000]["timestamp_ms"])
     t1 = Tweet(cursor[10000])
@@ -174,3 +190,4 @@ if __name__ == '__main__':
 
     q1 = tweet_query(tweets_db_collection, start_dt, end_dt)
     print(q1.count())
+    '''
