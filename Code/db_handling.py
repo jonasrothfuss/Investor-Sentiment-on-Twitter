@@ -5,7 +5,7 @@ import datetime
 import os
 from tweet import Tweet
 from parser import Parser
-from sentiment import sentiment
+import sentiment
 from tweets_statistic import Tweets_Statistic
 import pickle
 from pprint import pprint
@@ -13,6 +13,17 @@ import calendar
 from dateutil import parser
 import pandas as pd
 import matplotlib.pyplot as plt
+import stock_quotes
+import pickle
+import perform_analysis
+
+Dow_Jones_Tickers = {'MMM': '3M', 'AXP': 'American Express', 'AAPL': 'Apple', 'BA': 'Boeing', 'CAT': 'Caterpillar',
+                     'CVX': 'Chevron', 'CSCO': 'Cisco', 'KO': 'Coca Cola', 'DIS': 'Disney', 'DD': 'Du pont de Nemours',
+                     'XOM': 'Exxon Mobil', 'GE': 'General Electrics', 'GS': 'Goldman Sachs', 'HD': 'Home Depot',
+                     'IBM': 'IBM', 'INTC': 'Intel', 'JNJ': 'Johnson & Johnson', 'JPM': 'JPMorgan Chase', 'MCD': 'McDonald\'s',
+                     'MRK': 'Merck', 'MSFT': ' Microsoft', 'NKE': 'Nike', 'PFE': 'Pfizer', 'PG': 'Proctor & Gamble',
+                     'TRV': 'Travlers Companies Inc', 'UTX': 'United Technologies', 'UNH': 'UnitedHealth', 'VZ': 'Verizon',
+                     'V': 'Visa', 'WMT': 'Wal-Mart'}
 
 def print_dict(dict):
     for key in dict.keys():
@@ -124,32 +135,52 @@ def load_tweets_from_file(file_path):
             tweet_array.append(pickle.load(f))
     return tweet_array
 
-def convert_db_timestamps_to_int(collection, bulk_size = 1000):
-    cursor = collection.find()
+def convert_db_timestamps_to_int(collection, as_bulk = False, bulk_size = 1000):
+    cursor = collection.find().skip(872453)
     count = cursor.count()
-    n = 0
-    number_updates_pending = 0
-    bulk = collection.initialize_unordered_bulk_op()
-    for tweet in cursor:
-        if n % 1000 == 0:
-            print("Tweets processed: " + str(n))
-        try:
-            id = tweet["id"]
-            ts = tweet["timestamp_ms"]
-            if (type(ts) is str):
-                ts_int = int(ts)
-                bulk.find({"id": id}).update({'$set': {'timestamp_ms': ts_int}})
-                number_updates_pending += 1
-                print("Items in bulk: " + str(number_updates_pending))
-        except Exception as e:
-            print(e)
-            collection.delete_one({"_id": tweet['_id']})
-            print("Object deleted")
-        if number_updates_pending >= bulk_size or n == count - 1:
-            pprint(bulk.execute())
-            bulk = collection.initialize_unordered_bulk_op()
-            number_updates_pending = 0
-        n += 1
+    n = 872453
+
+    if  as_bulk:
+        number_updates_pending = 0
+        bulk = collection.initialize_unordered_bulk_op()
+        for tweet in cursor:
+            if n % 1000 == 0:
+                print("Tweets processed: " + str(n))
+            try:
+                id = tweet["id"]
+                ts = tweet["timestamp_ms"]
+                if (type(ts) is str):
+                    ts_int = int(ts)
+                    bulk.find({"id": id}).update({'$set': {'timestamp_ms': ts_int}})
+                    number_updates_pending += 1
+                    print("Items in bulk: " + str(number_updates_pending))
+            except Exception as e:
+                print(e)
+                collection.delete_one({"_id": tweet['_id']})
+                print("Object deleted")
+            if number_updates_pending >= bulk_size or n == count - 1:
+                pprint(bulk.execute())
+                bulk = collection.initialize_unordered_bulk_op()
+                number_updates_pending = 0
+            n += 1
+    else:
+        t = time.clock()
+        for tweet in cursor:
+            if n % 1000 == 0:
+                print(str(n) + "   Processing Time: " + str(time.clock()-t) + " sec")
+                t = time.clock()
+            try:
+                id = tweet["id"]
+                ts = tweet["timestamp_ms"]
+                if (type(ts) is str):
+                    #print(n)
+                    timestamp = int(ts)
+                    collection.update_one({"id": id}, {'$set': {'timestamp_ms': timestamp}})
+                n += 1
+            except Exception as e:
+                print(e)
+                collection.delete_one({"_id": tweet['_id']})
+                print("Object deleted")
 
 def tweet_query(collection, start_datetime, end_datetime):
     start_ts = datetime_to_ms_utc_timestamp(start_datetime)
@@ -161,18 +192,37 @@ def tweet_query(collection, start_datetime, end_datetime):
 def datetime_to_ms_utc_timestamp(dt):
     return calendar.timegm(dt.utctimetuple()) * 1000
 
+def tweets_as_object_array(cursor, symbol = None):
+    tweet_array = []
+    for t in cursor:
+        tweet = Tweet(t)
+        if (symbol is None) or tweet.has_symbol(symbol):
+            tweet_array.append(tweet)
+    return tweet_array
+
 def datetime_from_str(dt_str):
     return parser.parse(dt_str)
 
-def stock_prices_as_panda_df(collection, symbol):
-    cursor = collection.find({"ticker": symbol})
-    prices = []
-    dts = []
-    for p in cursor:
-        prices.append(float(p['price']))
-        dts.append(datetime_from_str(p['datetime_utc']))
-    panda_frame = pd.DataFrame(np.transpose(np.array([dts, prices])), columns=['time', 'price'])
+def stock_prices_as_panda_df(collection):
+    stock_symbols = Dow_Jones_Tickers.keys()
+    first_symbol = True
+    for symbol in stock_symbols:
+        cursor = collection.find({"ticker": symbol})
+        prices = []
+        dts = []
+        for p in cursor:
+            prices.append(float(p['price']))
+            dts.append(datetime_from_str(p['datetime_utc']))
+        current_panda_frame = pd.DataFrame(np.transpose(np.array([dts, prices])), columns=['time', symbol])
+        if not first_symbol:
+            panda_frame = pd.merge(panda_frame, current_panda_frame, how='outer', on=['time', 'time'])
+        else:
+            panda_frame = current_panda_frame
+            first_symbol = False
     return panda_frame.sort_values(by = 'time')
+
+def load_stockprices_as_panda_df(pickle_file_path = '/home/jonasrothfuss/Dropbox/Eigene Dateien/Uni/Bachelorarbeit/DumpData/prices_pickle'):
+    return pickle.load(open(pickle_file_path, 'rb'))
 
 if __name__ == '__main__':
     # connect to db_collection
@@ -180,13 +230,16 @@ if __name__ == '__main__':
     tweets_db_collection = get_tweets_collection(db)
     prices_collection = get_prices_collection(db)
 
+
+    start_dt = datetime.datetime(2015, 10, 22, 13, 30, 0)
+    end_dt = datetime.datetime(2016, 10, 23, 13, 30, 0)
+
+    #(result)
     '''
     cursor = tweets_db_collection.find()
     print(cursor[10000]["timestamp_ms"])
     t1 = Tweet(cursor[10000])
 
-    start_dt = datetime.datetime(2015, 10, 22, 0, 0, 0)
-    end_dt = datetime.datetime(2015, 10, 23, 0, 0, 0)
 
     q1 = tweet_query(tweets_db_collection, start_dt, end_dt)
     print(q1.count())
