@@ -1,21 +1,19 @@
-from pymongo import MongoClient
-import numpy as np
-import time
+import calendar
 import datetime
 import os
-from tweet import Tweet
-from parser import Parser
-import sentiment
-from tweets_statistic import Tweets_Statistic
 import pickle
+import time
 from pprint import pprint
-import calendar
-from dateutil import parser
+
+import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import stock_quotes
-import pickle
-import perform_analysis
+import theano
+from dateutil import parser
+from pymongo import MongoClient
+from theano import tensor as T
+
+from RNTN.rntn import RNTN
+from data_handling.tweet import Tweet
 
 Dow_Jones_Tickers = {'MMM': '3M', 'AXP': 'American Express', 'AAPL': 'Apple', 'BA': 'Boeing', 'CAT': 'Caterpillar',
                      'CVX': 'Chevron', 'CSCO': 'Cisco', 'KO': 'Coca Cola', 'DIS': 'Disney', 'DD': 'Du pont de Nemours',
@@ -230,9 +228,32 @@ if __name__ == '__main__':
     tweets_db_collection = get_tweets_collection(db)
     prices_collection = get_prices_collection(db)
 
+    theano.config.floatX = 'float32'
 
-    start_dt = datetime.datetime(2015, 10, 22, 13, 30, 0)
-    end_dt = datetime.datetime(2016, 10, 23, 13, 30, 0)
+    r = RNTN(20, 3)
+    b = r.init_vector([2*r.emb_dim, 1])
+
+    e1 = T.fcol('e1')
+    e2 = T.fcol('e1')
+
+    emb1 = np.random.normal(size=[20, 1]).astype(theano.config.floatX)
+    emb2 = np.random.normal(size=[20, 1]).astype(theano.config.floatX)
+
+    ru = r.create_recursive_unit()
+    xpr = ru(e1, e2)
+    print(theano.pp(xpr))
+
+    f = theano.function([e1,e2], xpr)
+
+    y = f(emb1, emb2)
+
+    print(y[0].shape)
+    print(y)
+
+    #start_dt = datetime.datetime(2015, 10, 22, 13, 30, 0)
+    #end_dt = datetime.datetime(2016, 10, 23, 13, 30, 0)
+    #perform_analysis.perform_daily_analysis(start_dt, end_dt, 'IBM', tweets_db_collection)
+
 
     #(result)
     '''

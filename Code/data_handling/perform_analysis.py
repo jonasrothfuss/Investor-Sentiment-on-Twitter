@@ -1,9 +1,10 @@
 import datetime
-import stock_quotes
-import db_handling
-import sentiment
-import pandas as pd
 import pickle
+
+import numpy as np
+import pandas as pd
+
+from data_handling import db_handling, sentiment, stock_quotes
 
 
 def is_monday_to_thursday(dt):
@@ -44,7 +45,7 @@ def perform_daily_analysis(start_dt, end_dt, stock_symbol, tweets_collection, lo
             try:
                 #calculate stock yield and sentiment
                 day_stock_yield = calc_stock_yield(from_dt, to_dt, stock_symbol)
-                day_sentiment = calc_day_sentiment(from_dt, end_dt, stock_symbol, tweets_collection)
+                day_sentiment = calc_day_sentiment(from_dt, to_dt, stock_symbol, tweets_collection)
 
                 #append current values to array
                 from_dt_array.append(from_dt)
@@ -52,7 +53,7 @@ def perform_daily_analysis(start_dt, end_dt, stock_symbol, tweets_collection, lo
                 stock_yield_array.append(day_stock_yield)
                 sentiment_array.append(day_sentiment)
 
-                log("Analysis Successful: " + str([from_dt, to_dt, day_stock_yield, sentiment_array]), log_file)
+                log("Analysis Successful: " + str([from_dt, to_dt, day_stock_yield, day_sentiment]), log_file)
             except BaseException as e:
                 log("--- Could not finish analysis in time period " + str(from_dt) + " - " + str(to_dt) + ": " + str(e), log_file)
 
@@ -66,11 +67,14 @@ def perform_daily_analysis(start_dt, end_dt, stock_symbol, tweets_collection, lo
 
     pd_dataframe = pd.DataFrame({'from_dt': from_dt_array,
                                  'to_dt': to_dt_array,
-                                 'yield': stock_yield_array,
+                                 'stock_yield': stock_yield_array,
                                  'sentiment': sentiment_array
                                  })
+
+    df = pd_dataframe[pd_dataframe["stock_yield"] != 0]
+    correlation = np.corrcoef(df["sentiment"], df["yield"])[0, 1]
 
     if pickle_file_path is not None:
         pickle.dump(pd_dataframe, open(pickle_file_path, "wb"))
 
-    return pd_dataframe
+    return pd_dataframe, correlation

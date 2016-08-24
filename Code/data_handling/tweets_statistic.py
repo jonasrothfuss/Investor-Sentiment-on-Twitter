@@ -1,5 +1,3 @@
-from tweet import Tweet
-
 class Tweets_Statistic:
 
 	def __init__(self, tweets=[]):

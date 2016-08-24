@@ -1,6 +1,6 @@
-from parser import Parser
-import nltk
 import time
+
+from data_handling.parser import Parser
 
 p = Parser()
 label_score_dict = {
@@ -30,7 +30,7 @@ def bulk_sentiment(tweets):
             score = sentiment_label_to_score(sentiment(t.text))
             cumulated_score += score
             sucess_counter += 1
-            #print("--- (" + str(score) + ") --- " + t.text)
+            print("--- (" + str(score) + ") --- " + t.text)
             if sucess_counter % 200 == 0:
                 duration = time.clock() - ts
                 ts = time.clock()

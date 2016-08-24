@@ -1,6 +1,8 @@
 import datetime
-from tokenizer import tokenize, preprocess
 import re
+
+from data_handling.tokenizer import preprocess
+
 
 def stock_symbols(tweet_dict):
     symbols = []
@@ -35,6 +37,9 @@ def text_w_replaced_entities(tweet_dict):
         text = text.replace(entity, replacement)
     return text.lower() #make lower case
 
+def get_lags(stock_symbol):
+    pass
+
 class Tweet:
     def __init__(self, tweet_dict):
         self.id = tweet_dict["_id"]
@@ -55,6 +60,9 @@ class Tweet:
 
     def number_of_symbols(self):
         return len(self.symbols)
+
+    def has_symbol(self, symbol):
+        return symbol.upper() in self.symbols
 
     def __str__(self):
         s = "Date: " + str(self.created_at) + "\n"
