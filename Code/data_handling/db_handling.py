@@ -4,7 +4,7 @@ import os
 import pickle
 import time
 from pprint import pprint
-
+import csv
 import numpy as np
 import pandas as pd
 import theano
@@ -22,6 +22,9 @@ Dow_Jones_Tickers = {'MMM': '3M', 'AXP': 'American Express', 'AAPL': 'Apple', 'B
                      'MRK': 'Merck', 'MSFT': ' Microsoft', 'NKE': 'Nike', 'PFE': 'Pfizer', 'PG': 'Proctor & Gamble',
                      'TRV': 'Travlers Companies Inc', 'UTX': 'United Technologies', 'UNH': 'UnitedHealth', 'VZ': 'Verizon',
                      'V': 'Visa', 'WMT': 'Wal-Mart'}
+
+sentiment104_PATH = '/home/jonasrothfuss/Dropbox/Eigene Dateien/Uni/Bachelorarbeit/Data/sentiment140/'
+
 
 def print_dict(dict):
     for key in dict.keys():
@@ -222,46 +225,16 @@ def stock_prices_as_panda_df(collection):
 def load_stockprices_as_panda_df(pickle_file_path = '/home/jonasrothfuss/Dropbox/Eigene Dateien/Uni/Bachelorarbeit/DumpData/prices_pickle'):
     return pickle.load(open(pickle_file_path, 'rb'))
 
-if __name__ == '__main__':
-    # connect to db_collection
-    db = connect_twitter_db()
-    tweets_db_collection = get_tweets_collection(db)
-    prices_collection = get_prices_collection(db)
-
-    theano.config.floatX = 'float32'
-
-    r = RNTN(20, 3)
-    b = r.init_vector([2*r.emb_dim, 1])
-
-    e1 = T.fcol('e1')
-    e2 = T.fcol('e1')
-
-    emb1 = np.random.normal(size=[20, 1]).astype(theano.config.floatX)
-    emb2 = np.random.normal(size=[20, 1]).astype(theano.config.floatX)
-
-    ru = r.create_recursive_unit()
-    xpr = ru(e1, e2)
-    print(theano.pp(xpr))
-
-    f = theano.function([e1,e2], xpr)
-
-    y = f(emb1, emb2)
-
-    print(y[0].shape)
-    print(y)
-
-    #start_dt = datetime.datetime(2015, 10, 22, 13, 30, 0)
-    #end_dt = datetime.datetime(2016, 10, 23, 13, 30, 0)
-    #perform_analysis.perform_daily_analysis(start_dt, end_dt, 'IBM', tweets_db_collection)
-
-
-    #(result)
-    '''
-    cursor = tweets_db_collection.find()
-    print(cursor[10000]["timestamp_ms"])
-    t1 = Tweet(cursor[10000])
-
-
-    q1 = tweet_query(tweets_db_collection, start_dt, end_dt)
-    print(q1.count())
-    '''
+def load_sentiment_140(train_data = True, cleaned = True, data_path = sentiment104_PATH):
+    if cleaned:
+        if train_data:
+            file_path = sentiment104_PATH + 'train_cleaned.pickle'
+        else:
+            file_path = sentiment104_PATH + 'test_cleaned.pickle'
+        return pickle.load(open(file_path, 'rb'))
+    else:
+        if train_data:
+            file_path = data_path + 'train.csv'
+        else:
+            file_path = data_path + 'test.csv'
+        return pd.read_csv(file_path, names=['label','id', 'dt', 'query', 'user', 'tweet'], sep=',', index_col = False)
