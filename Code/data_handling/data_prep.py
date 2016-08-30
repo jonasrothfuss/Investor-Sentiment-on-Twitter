@@ -26,17 +26,22 @@ def normalize_sent_label(s104dataframe):
     pickle.dump(s104dataframe, open(db_handling.sentiment104_PATH + 'train_cleaned.pickle', 'wb'))
     return s104dataframe
 
-def build_binary_rnn_tree(tree, sent_label = None):
-    root = tree_rnn.BinaryNode()
-    root.label = sent_label
+def build_binary_rnn_tree(tree, sent_label = None, subtree_root = None):
+    #delete root
+    if tree.label() == 'ROOT':
+        tree = tree[0]
+
+    if subtree_root:
+        root = subtree_root
+    else:
+        root = tree_rnn.BinaryNode()
+        root.label = sent_label
     for t_node in tree:
         node = tree_rnn.BinaryNode()
         root.add_child(node)
         if isinstance(t_node, Tree) and t_node.height() >= 2:
-            print(t_node.label())
-            build_binary_rnn_tree(t_node)
+            build_binary_rnn_tree(t_node, subtree_root = node)
         else: #leave node
-            print("Leave" + str(t_node))
             node.val = t_node
     return root
 
