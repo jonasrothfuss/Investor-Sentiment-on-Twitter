@@ -12,7 +12,7 @@ def stock_symbols(tweet_dict):
 
 def clean_tweet(tweet_text, remove_punctuation=True, remove_numbers=True):
     # replace hyperlinks
-    tweet_text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', 'url', tweet_text)
+    tweet_text = re.sub(r'(http[s]?://|www)(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', 'url', tweet_text)
     # replace & by 'and'
     tweet_text = tweet_text.replace('&amp;', 'and')
     # remove quotation
@@ -24,11 +24,13 @@ def clean_tweet(tweet_text, remove_punctuation=True, remove_numbers=True):
         tweet_text = re.sub(r'[0-9]*', '', tweet_text)
     if remove_punctuation:
         # Remove punctuation
-        tweet_text = re.sub("[\.]"*3, ' ', tweet_text)
+        tweet_text = re.sub('([\.]+[\s]*[\.]+)+', '.', tweet_text)
     #remove double spaces
     tweet_text = re.sub(' +', ' ',tweet_text)
     #limit exclamation marks
-    tweet_text = re.sub('!![!]*', '!!', tweet_text)
+    tweet_text = re.sub('([!]+[\s]*[!]+)+', '!', tweet_text)
+    #limit exclamation marks
+    tweet_text = re.sub('([\\?]+[\s]*[\\?]+)+', '?', tweet_text)
 
     #Clean hastags
     tweet_text = tweet_text.replace('\#', '')

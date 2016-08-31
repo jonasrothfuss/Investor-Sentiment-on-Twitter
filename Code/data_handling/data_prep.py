@@ -26,10 +26,7 @@ def normalize_sent_label(s104dataframe):
     pickle.dump(s104dataframe, open(db_handling.sentiment104_PATH + 'train_cleaned.pickle', 'wb'))
     return s104dataframe
 
-def build_binary_rnn_tree(tree, sent_label = None, subtree_root = None):
-    #delete root
-    if tree.label() == 'ROOT':
-        tree = tree[0]
+def build_binary_rnn_tree(tree, vocab, sent_label = None, subtree_root = None):
 
     if subtree_root:
         root = subtree_root
@@ -40,10 +37,33 @@ def build_binary_rnn_tree(tree, sent_label = None, subtree_root = None):
         node = tree_rnn.BinaryNode()
         root.add_child(node)
         if isinstance(t_node, Tree) and t_node.height() >= 2:
-            build_binary_rnn_tree(t_node, subtree_root = node)
+            build_binary_rnn_tree(t_node, vocab, subtree_root = node)
         else: #leave node
-            node.val = t_node
+            node.val = vocab.index(t_node.lower())
     return root
+
+def build_rnn_trees(tweets, labels, vocab):
+    tweets = list(tweets)
+    labels = list(labels)
+    assert len(tweets) == len(labels)
+
+    data = []
+    ts = time.clock()
+    p = parser.Parser()
+    for i in range(len(tweets)):
+        t = tweet.clean_tweet(tweets[i])
+        print(str(i) + ":  " + str(t))
+        parse_tree = p.parse_tree(t, binary=True, preprocessed=True)
+
+        tree = build_binary_rnn_tree(parse_tree, vocab, labels[i])
+        data.append((tree, labels[i]))
+
+        if i % 100000 == 20:
+            print(str(i) + "   Processing Time: " + str(time.clock()-ts) + ' sec')
+            ts = time.clock()
+            break
+
+    return data
 
 def create_vocab(text_array, vocab_file_path = None):
     # extracts all words in an text_array and generates a vocabulary set

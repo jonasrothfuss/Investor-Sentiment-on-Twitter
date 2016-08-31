@@ -28,38 +28,42 @@ class Parser:
         if type(nlp_output) == str:
             nlp_output = json.loads(nlp_output, strict=False)
 
-        parse_tree_array = []
-        for s in nlp_output['sentences']:
-            p_tree = Tree.fromstring(s['parse'])
+        if len(nlp_output['sentences']) > 1:
+            #merge trees from sentences
+            tree_string = "(Top "
+            for s in nlp_output['sentences']:
+                p_tree = Tree.fromstring(s['parse'])
+                tree_string += str(p_tree[0])
+            tree_string += ")"
+            merged_tree = Tree.fromstring(tree_string)
+        else:
+            #no merging required
+            merged_tree = Tree.fromstring(nlp_output['sentences'][0]['parse'])
+            #remove root
+            merged_tree = merged_tree[0]
 
-            if binary:
-                nltk.treetransforms.chomsky_normal_form(p_tree)
+        if binary:
+            nltk.treetransforms.chomsky_normal_form(merged_tree)
 
-            if preprocessed:
-                p_tree = preprocess_parse_tree(p_tree)
+        if preprocessed:
+            merged_tree = preprocess_parse_tree(merged_tree)
 
-            parse_tree_array.append(p_tree)
-
-        return parse_tree_array
+        return merged_tree
 
     def draw_parse_tree(self, parse_tree):
-        if isinstance(parse_tree, list):
-            for t in parse_tree:
-                nltk.draw.tree.draw_trees(t)
-        else:
-            nltk.draw.tree.draw_trees(parse_tree)
+        nltk.draw.tree.draw_trees(parse_tree)
 
 #replaces the subtrees with depth 2 with the respective leave
-def preprocess_parse_tree( tree):
-    p_tree = nltk.tree.ParentedTree.fromstring(str(tree))
+def preprocess_parse_tree(tree):
     assert isinstance(tree, Tree)
     all_one_child_nodes_removed = False
 
     while not all_one_child_nodes_removed:
         all_one_child_nodes_removed = True
-        for index in reversed(p_tree.treepositions()):
-            if isinstance(p_tree[index], Tree) and p_tree[index].height() == 2 and len(tree[index]) == 1:
+        for index in reversed(tree.treepositions()):
+            if tree.height() == 2:
+                break
+            if isinstance(tree[index], Tree) and tree[index].height() == 2 and len(tree[index]) == 1:
                 tree[index] = tree[index][0]
                 all_one_child_nodes_removed = False
-        p_tree = tree
     return tree
