@@ -47,8 +47,14 @@ class SentimentModel(tree_lstm.ChildSumTreeLSTM):
         loss, pred_y = self.train_step_inner(x, tree, y, labels_exist)
         return loss, pred_y
 
-    def loss_fn_multi(self, y, pred_y, y_exists):
         return T.sum(T.nnet.categorical_crossentropy(pred_y, y) * y_exists)
+
+    def loss_fn(self, y, pred_y): #overwrites the RSS loss
+        return T.nnet.categorical_crossentropy(pred_y, y)
+
+
+    def loss_fn_multi(self, y, pred_y, y_exists): #overwrites the RSS loss
+        return T.sum(T.sum(T.sqr(y - pred_y), axis=1) * y_exists, axis=0)
 
 def get_model(num_emb, output_dim, max_degree):
     return SentimentModel(
