@@ -56,14 +56,20 @@ class Parser:
 #replaces the subtrees with depth 2 with the respective leave
 def preprocess_parse_tree(tree):
     assert isinstance(tree, Tree)
+
     all_one_child_nodes_removed = False
 
     while not all_one_child_nodes_removed:
         all_one_child_nodes_removed = True
         for index in reversed(tree.treepositions()):
+            node = tree[index]
             if tree.height() == 2:
                 break
-            if isinstance(tree[index], Tree) and tree[index].height() == 2 and len(tree[index]) == 1:
-                tree[index] = tree[index][0]
+            if isinstance(tree[index], Tree) and len(tree[index]) == 1:
+                if index == ():
+                    tree = tree[0]
+                else:
+                    tree[index] = tree[index][0]
+
                 all_one_child_nodes_removed = False
     return tree
