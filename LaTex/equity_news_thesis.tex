@@ -10,8 +10,12 @@
 \usepackage{rotating}
 \usepackage{caption}
 \usepackage{subcaption}
-%\usepackage{biblatex}
-\usepackage[round]{natbib}
+\usepackage[backend=bibtex,style=authoryear,
+			maxcitenames=2,isbn=false,
+			doi=false, url=false,
+			eprint=false, natbib=true]{biblatex}
+\bibliography{library}
+%\usepackage{natbib}
 \usepackage{longtable, lscape}
 %\RequirePackage{graphicx}
 \usepackage{epstopdf}
@@ -142,10 +146,98 @@
 \section{Introduction}
 Stuff
 
-\section{Section}
-Bla
+\section{Preprocessing}
+Random citation \cite{Socher2011} embeddeed in text.
 
-\subsection{Subsection}
+\section{Natural Language Processing and Sentiment Analysis}
+Sentiment Analysis is considered as one of the major task of Natural Language Processing (NLP). Whilst the problem formulation in other fields of NLP such as part-of-speech tagging is relatively clear, sentiment analysis is a broader category of tasks consisting of multiple problem dimension. 
+
+One basic problem dimension with respect to sentiment is the analysis of polarity: "Given an opinionated piece of text, wherein it is assumed that the overall opinion in it is about one single issue or item, classify the opinion as falling under one of two opposing sentiment polarities, or locate its position on the continuum between these two polarities" \citep{Pang.2008}. Most common is the so called sentiment polarity classification which is a binary classification that distinguished between "positive" and "negative" sentiment. Early research conducted in this area mainly focuses on pieces of text that clearly express the author's subjective opinion on a specific entity. Typical problem sets with regard to sentiment polarity are reviews. One of the most discussed tasks in research is the classification of movie review sentiment as initially addressed in \citet{Pang2002} and \citet{Turney2002}.
+
+Another problem dimension of sentiment analysis is to distinguish between subjective and objective text. Whether the author only states facts or expresses his/her subjective opinion within a piece of text interferes with sentiment polarity detection. Subjective texts tend to contain more attributive verbs and verbs (e.g. to adore, to hate, terrible, fantastic, good, bad) which indicate the underlying sentiment. Thus, deciding on sentiment polarity given a subjective statement is usually easier in comparison to objective text. \citet{Pang2004} even showed that removing objective passages and sentences from a text when determining sentiment polarity can improve the performance.
+
+However, text data for sentiment classification does not always have to be strongly opinionated. News can be considered as good or bad without being subjective \citep{Pang.2008}. By just mirroring facts like "IPhone sales increased by 25\% in the first quarter" a piece of news can be positive or negative for an underlying entity such as the company or the respective stock. Hence, classifying equity news according to its impact on stock prices has been considered sentiment classification in the literature as well \citep{Koppel2006}.\\
+
+Also sentiment analysis varies in its scope. Tasks within the domain range from document level, such as deciding on the positivity/negativity of web reviews consisting of multiple sentences to phrase level sentiment such as short comments in social media.
+\subsection{Deep Learning in Natural Language Processing}
+
+\section{Data}
+\subsection{Sentiment140}
+
+\subsection{Collected Data}
+
+\begin{figure}[H]
+\captionsetup{justification=centering}
+\centering
+\includegraphics[width=1\textwidth]{graphics/tweet_percentages.pdf}
+\caption{Percentage of collected tweets that contain a respective stock ticker. Displayed are only 8 of 30 tickers with the highest occurance within the tweets. \label{fig:tweet_percentages}}
+\end{figure}
+
+
+
+\subsection{Tree Structured Long Short-Term Memory Networks}
+
+
+\subsubsection{Child-Sum Tree-LSTMs}
+Given a parsing tree, let $C(j)$ denote the set of children of node $j$. The translation functions of a Child-Sum Tree-LSTM unit are the following:
+
+$$
+\tilde{h}_j = \sum_{k \in C(j)} h_k
+$$
+
+$$
+i_j = \text{sigm} \left( W^{(i)} x_j + U^{(i)} \tilde{h}_j + b^{(i)} \right) 
+$$
+
+$$
+f_{jk} = \text{sigm} \left( W^{(f)} x_j + U^{(f)} h_k + b^{(f)} \right) 
+$$
+
+$$
+o_j = \text{sigm} \left( W^{(o)} x_j + U^{(o)} \tilde{h}_j + b^{(o)} \right) 
+$$
+
+$$
+u_j = \text{tanh} \left( W^{(u)} x_j + U^{(u)} \tilde{h}_j + b^{(u)} \right) 
+$$
+
+$$
+c_j = i_j \odot u_j + \sum_{k \in C(j)} f_{jk} \odot c_k
+$$
+
+$$
+h_j = o_j \odot \text{tanh}(c_j)
+$$
+
+where $k \in C(j)$
+
+\subsubsection{N-ary Tree-LSTMs}
+
+$$
+i_j = \text{sigm} \left( W^{(i)} x_j + \sum_{l=1}^N U_l^{(i)} h_{jl} + b^{(i)} \right) 
+$$
+
+$$
+f_{jk} = \text{sigm} \left( W^{(f)} x_j + \sum_{l=1}^N U_{kl}^{(f)} h_{jl} + b^{(f)} \right) 
+$$
+
+$$
+o_j = \text{sigm} \left( W^{(o)} x_j + \sum_{l=1}^N U_{l}^{(o)} h_{jl} + b^{(o)} \right) 
+$$
+
+$$
+u_j = \text{tanh} \left( W^{(u)} x_j +\sum_{l=1}^N U_{l}^{(u)} h_{jl} + b^{(u)} \right)
+$$
+
+$$
+c_j = i_j \odot u_j + \sum_{l=1}^N f_{jl} \odot c_{jl}
+$$
+
+$$
+h_j = o_j \odot \text{tanh}(c_j)
+$$
+
+\subsubsection{Subsection}
 
 % Declaration
 \newpage
@@ -171,12 +263,13 @@ Bla
 %\rightline{Muster Mustermann\hspace{4cm}}\\
 
 \newpage
-\addcontentsline{toc}{section}{Bibliography} \nocite{*}
+\addcontentsline{toc}{section}{Bibliography} % \nocite{*}
 %\bibliographystyle{plainat}
 %\bibliographystyle{plainnat}
-\bibliographystyle{jf}
-%\bibliography{lgdLiterature}
-\bibliography{BALiterature}
+%\bibliographystyle{jf}
+%\bibliographystyle{apalike}
+\printbibliography
+
 
 \newpage
 \addcontentsline{toc}{section}{Appendix} \nocite{*}
