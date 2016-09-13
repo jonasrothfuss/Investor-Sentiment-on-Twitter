@@ -1,3 +1,70 @@
+import matplotlib.pyplot as plt
+import matplotlib.mlab as mlab
+from data_handling import db_handling
+import pandas as pd
+import numpy as np
+import operator
+
+def ticker_histogram(tweets_df, number_of_tickers = 8):
+    ticker_tally = {}
+    number_of_tweets = len(tweets_df.index)
+    for ticker in db_handling.Dow_Jones_Tickers.keys():
+        ticker_tally[ticker] = len(tweets_df[tweets_df[ticker]==True][ticker])/float(number_of_tweets)
+
+    tickers, values = dict_as_lists(ticker_tally, max_number=number_of_tickers)
+    plt.style.use('ggplot')
+    plt.bar(range(len(values)), values, align='center', color ='grey')
+    plt.xticks(range(len(tickers)), tickers)
+    plt.xlim((-1, number_of_tickers +2))
+    plt.ylabel('percentage of tweets with respective ticker' + '\n')
+    #plot.yaxis.set_major_formatter(FuncFormatter('%.0f%%'))
+    plt.show()
+
+def colsum_ticker_occurance_count(tweets_df):
+    tweet_occurance_array = tweets_df.as_matrix(columns=db_handling.Dow_Jones_Tickers.keys())
+    return np.sum(tweet_occurance_array, axis=1)
+
+def simultaneous_ticker_occurance_diagram(tweets_df):
+    colsum = colsum_ticker_occurance_count(tweets_df)
+    plt.hist(colsum, 25, normed=1)
+    plt.show()
+    #print(set(list(np.sum(tweet_occurance_array, axis = 1)))
+
+def histo_normdist_plot(data_array, xrange, xlabel = None, ylabel = None):
+    plt.style.use('ggplot')
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    _, bins, patches = ax.hist(data_array, 50, range=xrange, normed=True, facecolor='grey')
+
+    #normal dist
+    sd = np.std(data_array)
+    mu = np.mean(data_array)
+    bincenters = 0.5 * (bins[1:] + bins[:-1])
+    y_norm = mlab.normpdf(bincenters, mu, sd)
+    ax.plot(bincenters, y_norm, 'r--', linewidth=1, color = 'black')
+    if xlabel:
+        plt.xlabel(xlabel)
+    if ylabel:
+        plt.ylabel(ylabel)
+
+    plt.show()
+
+def tweets_with_one_ticker(tweets_df):
+    colsum = colsum_ticker_occurance_count(tweets_df)
+    return tweets_df[colsum == 1]
+
+
+def dict_as_lists(dict, descending = True, max_number = None):
+    ordered_tuples = sorted(dict.items(), reverse=descending, key=operator.itemgetter(1))
+    key_array = []
+    value_array =[]
+    for n, tuple in enumerate(ordered_tuples):
+        key_array.append(tuple[0])
+        value_array.append(tuple[1])
+        if max_number and n-1 >= max_number:
+            break
+    return key_array, value_array
+
 class Tweets_Statistic:
 
 	def __init__(self, tweets=[]):

@@ -4,16 +4,14 @@ import os
 import pickle
 import time
 from pprint import pprint
-import csv
 import numpy as np
 import pandas as pd
-import theano
 from dateutil import parser
 from pymongo import MongoClient
-from theano import tensor as T
-
-from RNTN.rntn import RNTN
+from data_handling import tweet
+import traceback
 from data_handling.tweet import Tweet
+from bson.objectid import ObjectId
 
 Dow_Jones_Tickers = {'MMM': '3M', 'AXP': 'American Express', 'AAPL': 'Apple', 'BA': 'Boeing', 'CAT': 'Caterpillar',
                      'CVX': 'Chevron', 'CSCO': 'Cisco', 'KO': 'Coca Cola', 'DIS': 'Disney', 'DD': 'Du pont de Nemours',
@@ -141,7 +139,7 @@ def convert_db_timestamps_to_int(collection, as_bulk = False, bulk_size = 1000):
     count = cursor.count()
     n = 872453
 
-    if  as_bulk:
+    if as_bulk:
         number_updates_pending = 0
         bulk = collection.initialize_unordered_bulk_op()
         for tweet in cursor:
@@ -238,3 +236,75 @@ def load_sentiment_140(train_data = True, cleaned = True, data_path = sentiment1
         else:
             file_path = data_path + 'test.csv'
         return pd.read_csv(file_path, names=['label','id', 'dt', 'query', 'user', 'tweet'], sep=',', index_col = False)
+
+def convert_tweets_to_df(tweets_collection, dump_dir_path, section_size = 200000, start_at = 0):
+    cursor = tweets_collection.find()
+    collection_size = cursor.count()
+    skip_array = [i for i in range(collection_size) if i % section_size == 0]
+    cursor.close()
+    for i in range(start_at, len(skip_array)):
+        tweet_storage_dict = create_empty_tweet_storage_dict()
+        print("Section", i)
+        ts = time.clock()
+        try:
+            with tweets_collection.find().skip(skip_array[i]) as cursor:
+                n = 1
+                for tweet_dict in cursor:
+                    tweet_storage_dict = add_tweet_to_storage_dict(tweet_storage_dict, tweet_dict)
+                    if n % 20000 == 0:
+                        print('' + str((skip_array[i] + n) / float(collection_size) * 100.0) + " %    " + "Duration: " + str(
+                            time.clock() - ts))
+                        ts = time.clock()
+                    if n == section_size:
+                        break
+                    n += 1
+        except:
+            print(traceback.format_exc())
+            print("Error occured in section: ", str(i*section_size), '-', str((i+1)*section_size), 'at index', str(skip_array[i] + n))
+        finally:
+            df = storage_dict_as_df(tweet_storage_dict)
+            file_path = dump_dir_path + '/tweets' + str(i) + '.pickle'
+            pickle.dump(df, open(file_path, 'wb'))
+            print('successfully dumped dataframe corresponding to section', i)
+
+def create_empty_tweet_storage_dict():
+     tweet_storage_dict = {
+            'id': [],
+            'text': [],
+            'created_at': [],
+            'timestamp': [],
+            'follower_count': [],
+        }
+     for symbol in Dow_Jones_Tickers.keys():
+         tweet_storage_dict[symbol] = []
+     return tweet_storage_dict
+
+def add_tweet_to_storage_dict(storage_dict, tweet_dict):
+    original_storage_dict = storage_dict
+    try:
+        storage_dict['text'].append(tweet.clean_tweet(tweet.text_w_replaced_entities(tweet_dict)))
+        storage_dict['id'].append(str(tweet_dict["_id"]))
+        storage_dict['created_at'].append(tweet.created_at_datetime(tweet_dict['timestamp_ms']))
+        storage_dict['timestamp'].append(int(tweet_dict["timestamp_ms"]))
+        storage_dict['follower_count'].append(tweet_dict['user']['followers_count'])
+
+        stock_symbols = tweet.stock_symbols(tweet_dict)
+        stock_symbols = [symbol.upper() for symbol in stock_symbols]
+        for symbol in Dow_Jones_Tickers.keys():
+            if symbol in stock_symbols:
+                storage_dict[symbol].append(True)
+            else:
+                storage_dict[symbol].append(False)
+    except Exception as e:
+        storage_dict = original_storage_dict
+        print("Failed to append new tweet to storage dict due to:", str(e))
+    return storage_dict
+
+def storage_dict_as_df(storage_dict):
+    return pd.DataFrame(data = storage_dict)
+
+def load_tweets_df(file_path):
+    return pickle.load(open(file_path, 'rb'))
+
+def query_by_mongo_id(collection, id_str):
+    return collection.find_one({'_id': ObjectId(id_str)})

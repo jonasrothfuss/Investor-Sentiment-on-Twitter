@@ -33,7 +33,7 @@ def clean_tweet(tweet_text, remove_punctuation=True, remove_numbers=True):
     tweet_text = re.sub('([\\?]+[\s]*[\\?]+)+', '?', tweet_text)
 
     #Clean hastags
-    tweet_text = tweet_text.replace('\#', '')
+    tweet_text = tweet_text.replace('#', '')
 
     # Clean tickers
     tickers = re.findall(r'\$[a-zA-Z0-9]*', tweet_text)
@@ -41,8 +41,6 @@ def clean_tweet(tweet_text, remove_punctuation=True, remove_numbers=True):
         tweet_text = tweet_text.replace(t, t[1:])
 
     return tweet_text.lower()
-
-
 
 #replaces entities and users in tweet text
 def text_w_replaced_entities(tweet_dict):
@@ -70,11 +68,14 @@ def text_w_replaced_entities(tweet_dict):
 def get_lags(stock_symbol):
     pass
 
+def created_at_datetime(timestamp):
+    return datetime.datetime.utcfromtimestamp(int(timestamp)//1000)
+
 class Tweet:
     def __init__(self, tweet_dict):
         self.id = tweet_dict["_id"]
         self.text = clean_tweet(text_w_replaced_entities(tweet_dict))
-        self.created_at = datetime.datetime.utcfromtimestamp(int(tweet_dict["timestamp_ms"])//1000)
+        self.created_at = created_at_datetime(tweet_dict["timestamp_ms"])
         self.timestamp = int(tweet_dict["timestamp_ms"])
         self.language = tweet_dict['lang']
         self.retweet_count = tweet_dict["retweet_count"]
@@ -83,7 +84,6 @@ class Tweet:
         self.symbols = stock_symbols(tweet_dict)
         self.follower_count = tweet_dict['user']['followers_count']
         self.user = tweet_dict['user']
-        self.text_tokens = preprocess(self.text)
 
     def number_of_urls(self):
         return len(self.urls)
@@ -100,3 +100,15 @@ class Tweet:
         s += "Symbols: " + str(self.symbols) + "\n"
         return s
 
+    def __iter__(self):
+        yield '_id', self._id
+        yield 'text', self.text
+        yield 'created_at', self.created_at
+        yield 'timestamp', self.timestamp
+        yield 'language', self.language
+        yield 'retweet_count', self.retweet_count
+        yield 'urls', self.urls
+        yield 'hashtags', self.hashtags
+        yield 'symbols', self.symbols
+        yield 'follower_count', self.follower_count
+        yield 'user', self.user
