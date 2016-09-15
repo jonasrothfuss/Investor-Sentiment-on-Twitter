@@ -7,10 +7,12 @@ from data_handling import db_handling
 from data_handling import tweets_statistic
 from data_handling import stock_quotes
 from data_handling import data_prep
+from TreeLSTM import data_utils
 import numpy as np
 import pickle
 import time
 import datetime
+import pandas
 
 def clean_tweets_in_df(s104dataframe):
     for i in range(len(s104dataframe["tweet"])):
@@ -65,7 +67,7 @@ def build_rnn_trees(tweets, labels, vocab):
             print(str(i) + "   Processing Time: " + str(time.clock()-ts) + ' sec')
             ts = time.clock()
 
-        if i == 2000:
+        if i == 10: #TODO delete break statement
             break
 
     return data
@@ -194,3 +196,57 @@ def lag_to_label(lags, percentile1, percentile2):
             label_array.append(1) #neutral
 
     return label_array
+
+def label_dist(label_col):
+    label_dist_dict = {}
+    for label in set(label_col):
+        label_dist_dict[label] = len(label_col[label_col == label].index)
+    return label_dist_dict
+
+def gen_oversampled_train_df(train_df):
+    assert 'label' in train_df.columns.values.tolist()
+    label_dist_dict = label_dist(train_df['label'])
+    max_sample_label = max(label_dist_dict, key=lambda k: label_dist_dict[k])
+    num_of_samples_goal = label_dist_dict[max_sample_label]
+    del label_dist_dict[max_sample_label]
+
+    for label in label_dist_dict.keys():
+        original_data_with_label = train_df[train_df['label'] == label]
+        samples_of_label = label_dist_dict[label]
+
+        if num_of_samples_goal//samples_of_label > 1:
+            for i in range(num_of_samples_goal//samples_of_label - 1):
+                train_df = pandas.concat([train_df, original_data_with_label])
+
+        number_of_samples_to_add = num_of_samples_goal % samples_of_label
+        indexes_to_add = np.random.choice(original_data_with_label.index, number_of_samples_to_add, False)
+        s = original_data_with_label.ix[indexes_to_add]
+        train_df = pandas.concat([train_df, s])
+        assert all(s == num_of_samples_goal for s in label_dist(train_df['label']).values())
+    return train_df
+
+def gen_train_and_dev_split(df, perc_train, oversampling = False):
+    train_indexes = np.random.choice(df.index, int(len(df.index) * perc_train), False)
+    train_df = df.iloc[train_indexes,]
+    dev_indexes = list(set(df.index) - set(train_indexes))
+    dev_df = df.iloc[dev_indexes,]
+    assert len(dev_df.index) + len(train_df.index) == len(df.index)
+
+    if oversampling:
+        train_df = gen_oversampled_train_df(train_df)
+
+    return train_df, dev_df
+
+def prepare_data(vocab_file_path, df, train_split_percentage = 0.85):
+    #vocabulary
+    vocab = data_utils.Vocab()
+    vocab.load(vocab_file_path)
+    print('Vocab Size: ', len(vocab.word2idx))
+
+    #train and dev split
+    train_df, dev_df = data_prep.gen_train_and_dev_split(df, train_split_percentage, oversampling=True)
+    data = {}
+    data['train'] = data_prep.build_rnn_trees(train_df['tweet'], train_df['label'], vocab)
+    data['dev'] = data_prep.build_rnn_trees(dev_df['tweet'], dev_df['label'], vocab)
+
+    return vocab, data
