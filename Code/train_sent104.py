@@ -1,13 +1,9 @@
 from data_handling import db_handling
 from data_handling import data_prep
 from TreeLSTM import data_utils
-from TreeLSTM import tree_lstm
-from TreeLSTM import tree_rnn
+from model import SentimentModel
 import matplotlib.pyplot as plt
 import numpy as np
-from theano import tensor as T
-import theano
-import os
 import pandas
 
 SEED = 22
@@ -23,41 +19,9 @@ DEPENDENCY = False
 NUM_EPOCHS = 2 #TODO set to 30
 
 GLOVE_DIR = '/home/jonasrothfuss/Documents/treelstm/data'
+PARAMS_PICKLE_FILE_PATH = db_handling.sentiment104_PATH + 'params.pickle'
 
 LABEL_TRANSLATION_DICT = {-1: 2, 0: 0, 1: 1}
-
-class SentimentModel(tree_lstm.ChildSumTreeLSTM):
-    def train_step_inner(self, x, tree, y, y_exists = None):
-        self._check_input(x, tree)
-        if self.labels_on_nonroot_nodes:
-            assert y_exists is not None
-            return self._train(x, tree[:, :-1], y, y_exists)
-        else:
-            return self._train(x, tree[:, :-1], y)
-
-    def train_step(self, root_node, label):
-        x, tree, labels, labels_exist = \
-            tree_rnn.gen_nn_inputs(root_node, max_degree=self.degree,
-                                   only_leaves_have_vals=False,
-                                   with_labels=True)
-        if self.labels_on_nonroot_nodes:
-            y = np.zeros((len(labels), self.output_dim), dtype=theano.config.floatX)
-            y[np.arange(len(labels)), labels.astype('int32')] = 1
-        else:
-            y = np.zeros(self.output_dim, dtype=theano.config.floatX)
-            y[labels[-1].astype('int32')] = 1
-
-        loss, pred_y = self.train_step_inner(x, tree, y, labels_exist)
-        return loss, pred_y
-
-    def loss_fn_multi(self, y, pred_y, y_exists): #overwrites the RSS loss
-        return T.sum(T.nnet.categorical_crossentropy(pred_y, y) * y_exists)
-
-    def loss_fn(self, y, pred_y): #overwrites the RSS loss
-        return -T.sum(y * T.log(pred_y))
-
-    def loss_fn_multi(self, y, pred_y, y_exists): #overwrites the RSS loss
-        return T.sum(T.sum(T.sqr(y - pred_y), axis=1) * y_exists, axis=0)
 
 def get_model(num_emb, output_dim, max_degree):
     return SentimentModel(
@@ -93,7 +57,6 @@ def gen_oversampled_train_df(train_df):
         train_df = pandas.concat([train_df, s])
         assert all(s == num_of_samples_goal for s in label_dist(train_df['label']).values())
     return train_df
-
 
 def gen_train_and_dev_split(df, perc_train, oversampling = False):
     train_indexes = np.random.choice(df.index, int(len(df.index) * perc_train), False)
@@ -151,16 +114,8 @@ def train(vocab_file_path):
 
     model = get_model(num_emb, num_labels, max_degree)
 
-    # initialize model embeddings to glove
-    embeddings = model.embeddings.get_value()
-    glove_vecs = np.load(os.path.join(GLOVE_DIR, 'glove.npy'))
-    glove_words = np.load(os.path.join(GLOVE_DIR, 'words.npy'))
-    glove_word2idx = dict((word, i) for i, word in enumerate(glove_words))
-    for i, word in enumerate(vocab.words):
-        if word in glove_word2idx:
-            embeddings[i] = glove_vecs[glove_word2idx[word]]
-    glove_vecs, glove_words, glove_word2idx = [], [], []
-    model.embeddings.set_value(embeddings)
+    # initialize model embeddings with GloVe
+    model.initialize_model_embeddings(vocab, GLOVE_DIR)
 
     #perform training and evaluation steps
     for epoch in range(NUM_EPOCHS):
