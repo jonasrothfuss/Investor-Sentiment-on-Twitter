@@ -8,8 +8,9 @@ import numpy as np
 import sklearn
 import pickle
 import os
-import logging
 import datetime
+import logging
+import time
 
 SEED = 22
 NUM_LABELS = 3
@@ -39,30 +40,11 @@ def get_model(num_emb, output_dim, max_degree):
         labels_on_nonroot_nodes=False,
         irregular_tree=DEPENDENCY)
 
-def setup_logger(log_file_path):
-    # set up logging to file - see previous section for more details
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s %(message)s',
-                        datefmt='%m-%d %H:%M',
-                        filename=log_file_path,
-                        filemode='w')
-    # define a Handler which writes INFO messages or higher to the sys.stderr
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    # set a format which is simpler for console use
-    formatter = logging.Formatter('%(asctime)s %(message)s')
-    # tell the handler to use this format
-    console.setFormatter(formatter)
-    # add the handler to the root logger
-    logging.getLogger('').addHandler(console)
-
 def train(vocab, data, param_initialization = None, param_load_file_path = None, param_dump_file_path = None,
           data_batched = False, metrics_dump_path = None):
     #set seed
     np.random.seed(SEED)
 
-    #setup logger
-    setup_logger("../Data/log.txt")
     logging.info(" --- STARTED TRAINING SESSION: " + str(datetime.datetime.now()) + ' ---')
 
     assert type(data) is dict
@@ -74,12 +56,15 @@ def train(vocab, data, param_initialization = None, param_load_file_path = None,
     if data_batched:
         #load and concatenate dev data
         dev_set = data_prep.load_and_concatenate_dumps(data['dev'])
+        train_count = 0
         # assert that data is labeled the right way
         assert set([label for _, label in dev_set]) <= set([0, 1, 2])
         for batch_nr, train_dump_file in enumerate(data['train']):
             train_batch = pickle.load(open(train_dump_file, 'rb'))
+            train_count += len(train_batch)
             assert set([label for _, label in train_batch]) <= set([0, 1, 2])
             logging.info('Batch ' + str(batch_nr + 1) + ' of ' + str(len(data['train'])) + ' OK')
+        logging.info('train ' + str(train_count))
     else:
         train_set, dev_set = data['train'], data['dev']
         # assert that data is labeled the right way
@@ -92,31 +77,46 @@ def train(vocab, data, param_initialization = None, param_load_file_path = None,
     logging.info('num emb: ' + str(num_emb))
     logging.info('num labels: ' + str(num_labels))
 
-    #TODO add test data and final evaluation
-
     model = get_model(num_emb, num_labels, max_degree)
+
     if param_initialization:
         model.set_params(param_initialization)
     elif param_load_file_path:
         model.set_params(pickle_file_path=param_load_file_path)
-
-    # initialize model embeddings with GloVe
-    model.initialize_model_embeddings(vocab, GLOVE_DIR)
+    else:
+        # initialize model embeddings with GloVe
+        model.initialize_model_embeddings(vocab, GLOVE_DIR)
 
     metrics_dict = {'avg_loss': [], 'dev_accuracy': [], 'f1_score': [], 'conf_matrix': []}
 
+    ts = time.clock()
+    batches_left = NUM_EPOCHS * len(data['train'])
     #perform training and evaluation steps
     for epoch in range(NUM_EPOCHS):
-        logging.info('EPOCH ' + str(epoch))
         if data_batched:
             for batch_nr, train_dump_file in enumerate(data['train']):
-                logging.info('Batch ' + str(batch_nr + 1) + ' of ' + str(len(data['train'])))
+                logging.info('EPOCH ' + str(epoch) +'| Batch ' + str(batch_nr + 1) + ' of ' + str(len(data['train'])))
+
                 train_batch = pickle.load(open(train_dump_file, 'rb'))
                 avg_loss = train_dataset(model, train_batch)
                 logging.info('avg loss ' + str(avg_loss))
+
+                if param_dump_file_path:
+                    model.get_params(pickle_file_path=param_dump_file_path)
+                    logging.info('Dumped model parameters to: ' + param_dump_file_path)
+
+                batches_left += -1
+                print('Estimateed time till finish: ' + str((time.clock() - ts)*batches_left) + 'sec')
+                ts = time.clock()
+
         else:
+            logging.info('EPOCH ' + str(epoch))
             avg_loss = train_dataset(model, train_set)
             logging.info('avg loss ' + str(avg_loss))
+            if param_dump_file_path:
+                model.get_params(pickle_file_path=param_dump_file_path)
+                logging.info('Dumped model parameters to: ' + param_dump_file_path)
+
         dev_accuracy, f1_score, conf_matrix = evaluate_dataset(model, dev_set)
         metrics_dict = add_to_metrics_dict(metrics_dict, avg_loss, dev_accuracy, f1_score, conf_matrix)
         logging.info('dev accuracy ' + str(dev_accuracy) + ' f1 score ' + str(f1_score))
