@@ -22,7 +22,7 @@ TRAIN_SPLIT_PERCENTAGE = 0.85
 LEARNING_RATE = 0.01
 DEPENDENCY = False
 
-NUM_EPOCHS = 2 #TODO set to 30
+NUM_EPOCHS = 30
 
 GLOVE_DIR = '../Data/Glove/'
 PARAMS_PICKLE_FILE_PATH = db_handling.sentiment104_PATH + 'params.pickle'
@@ -41,7 +41,7 @@ def get_model(num_emb, output_dim, max_degree):
         irregular_tree=DEPENDENCY)
 
 def train(vocab, data, param_initialization = None, param_load_file_path = None, param_dump_file_path = None,
-          data_batched = False, metrics_dump_path = None):
+          data_batched = False, metrics_dump_path = None, num_epochs=NUM_EPOCHS):
     #set seed
     np.random.seed(SEED)
 
@@ -63,6 +63,10 @@ def train(vocab, data, param_initialization = None, param_load_file_path = None,
             train_batch = pickle.load(open(train_dump_file, 'rb'))
             train_count += len(train_batch)
             assert set([label for _, label in train_batch]) <= set([0, 1, 2])
+
+            labels = [label for _, label in train_batch]
+            print(labels.count(0), labels.count(1), labels.count(2))
+
             logging.info('Batch ' + str(batch_nr + 1) + ' of ' + str(len(data['train'])) + ' OK')
         logging.info('train ' + str(train_count))
     else:
@@ -90,9 +94,9 @@ def train(vocab, data, param_initialization = None, param_load_file_path = None,
     metrics_dict = {'avg_loss': [], 'dev_accuracy': [], 'f1_score': [], 'conf_matrix': []}
 
     ts = time.clock()
-    batches_left = NUM_EPOCHS * len(data['train'])
+    batches_left = num_epochs * len(data['train'])
     #perform training and evaluation steps
-    for epoch in range(NUM_EPOCHS):
+    for epoch in range(num_epochs):
         if data_batched:
             for batch_nr, train_dump_file in enumerate(data['train']):
                 logging.info('EPOCH ' + str(epoch) +'| Batch ' + str(batch_nr + 1) + ' of ' + str(len(data['train'])))
@@ -106,7 +110,7 @@ def train(vocab, data, param_initialization = None, param_load_file_path = None,
                     logging.info('Dumped model parameters to: ' + param_dump_file_path)
 
                 batches_left += -1
-                print('Estimateed time till finish: ' + str((time.clock() - ts)*batches_left) + 'sec')
+                print('----- Estimateed time till finish: ' + str((time.clock() - ts)*batches_left) + ' sec')
                 ts = time.clock()
 
         else:
@@ -174,8 +178,8 @@ def train_on_sent140(vocab_file_path = VOCAB_FILE, param_initialization = None,
     return train(vocab, data, data_batched=True, metrics_dump_path=dump_dir + 'metrics.pickle',
                  param_initialization=param_initialization, param_dump_file_path=dump_dir + 'params.pickle')
 
-def train_on_tweets_collected(vocab_file_path = VOCAB_FILE, param_initialization = None,
-                              dump_dir = '../Data/tweets_collected/dump_test/'): # TODO change back to dump/train dir
+def train_on_tweets_collected(vocab_file_path = VOCAB_FILE, param_initialization = None, num_epochs=NUM_EPOCHS,
+                              dump_dir='../Data/tweets_collected/dump/'):
     vocab = load_vocab(vocab_file_path)
 
     # pass data as dict with dump file paths (indicated by data_batched=True)
@@ -184,15 +188,17 @@ def train_on_tweets_collected(vocab_file_path = VOCAB_FILE, param_initialization
     dev_dir = dump_dir + 'dev/'
     data['train'] = [train_dir + file for file in os.listdir(train_dir)]
     data['dev'] = [dev_dir + file for file in os.listdir(dev_dir)]
-    return train(vocab, data, data_batched=True, metrics_dump_path=dump_dir + 'metrics.pickle',
+    return train(vocab, data, data_batched=True, metrics_dump_path=dump_dir + 'metrics.pickle', num_epochs=num_epochs,
                  param_initialization=param_initialization, param_dump_file_path=dump_dir + 'params.pickle')
 
-def train_on_sst(vocab_file_path = VOCAB_FILE, param_initialization = None):
+def train_on_sst(vocab_file_path = VOCAB_FILE, param_initialization = None, num_epochs=NUM_EPOCHS,
+                              dump_dir='../Data/sst/dump/'):
     vocab = load_vocab(vocab_file_path)
 
     _, data = pickle.load(open(SST_DIR_PATH + 'sst_data.pickle', 'rb'))
     del data['max_degree']
-    return train(vocab, data, param_initialization=param_initialization)
+    return train(vocab, data, metrics_dump_path=dump_dir + 'metrics.pickle', num_epochs=num_epochs,
+                 param_initialization=param_initialization, param_dump_file_path=dump_dir + 'params.pickle')
 
 def load_vocab(vocab_file_path):
     vocab = data_utils.Vocab()

@@ -220,7 +220,7 @@ def stock_prices_as_panda_df(collection):
             first_symbol = False
     return panda_frame.sort_values(by = 'time')
 
-def load_stockprices_as_panda_df(pickle_file_path = '/home/jonasrothfuss/Dropbox/Eigene Dateien/Uni/Bachelorarbeit/DumpData/prices_pickle'):
+def load_stockprices_as_panda_df(pickle_file_path = '../DumpData/prices.pickle'):
     return pickle.load(open(pickle_file_path, 'rb'))
 
 def load_sentiment_140(train_data = True, cleaned = True, data_path = sentiment104_PATH):
