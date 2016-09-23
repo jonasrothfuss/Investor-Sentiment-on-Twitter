@@ -23,6 +23,7 @@ LEARNING_RATE = 0.01
 DEPENDENCY = False
 
 NUM_EPOCHS = 30
+ADA_DELTA = True
 
 GLOVE_DIR = '../Data/Glove/'
 PARAMS_PICKLE_FILE_PATH = db_handling.sentiment104_PATH + 'params.pickle'
@@ -38,7 +39,7 @@ def get_model(num_emb, output_dim, max_degree):
         degree=max_degree, learning_rate=LEARNING_RATE,
         trainable_embeddings=True,
         labels_on_nonroot_nodes=False,
-        irregular_tree=DEPENDENCY)
+        irregular_tree=DEPENDENCY, ada_delta=ADA_DELTA)
 
 def train(vocab, data, param_initialization = None, param_load_file_path = None, param_dump_file_path = None,
           data_batched = False, metrics_dump_path = None, num_epochs=NUM_EPOCHS):

@@ -5,8 +5,31 @@ import numpy as np
 import theano.tensor as T
 import theano
 import pickle
+from theano.compat.python2x import OrderedDict
 
 class SentimentModel(tree_lstm.NaryTreeLSTM):
+    def __init__(self, *args, **kwargs):
+        ada_delta = kwargs.pop('ada_delta')
+        #call super instructor
+        super(SentimentModel, self).__init__(*args, **kwargs)
+
+        if ada_delta:
+            # initialize intermediate update storage
+            self.gradients_sq = [theano.shared(np.zeros(p.get_value().shape, dtype=theano.config.floatX)) for p in
+                                 self.params]
+            self.deltas_sq = [theano.shared(np.zeros(p.get_value().shape, dtype=theano.config.floatX)) for p in
+                              self.params]
+
+            updates = self.gradient_descent(self.loss)
+
+            train_inputs = [self.x, self.tree, self.y]
+            if self.labels_on_nonroot_nodes:
+                train_inputs.append(self.y_exists)
+            self._train = theano.function(train_inputs, [self.loss, self.pred_y], updates=updates)
+            self._evaluate = theano.function([self.x, self.tree], self.final_state)
+            self._predict = theano.function([self.x, self.tree], self.pred_y)
+
+
     def train_step_inner(self, x, tree, y, y_exists = None):
         self._check_input(x, tree)
         if self.labels_on_nonroot_nodes:
@@ -96,3 +119,22 @@ class SentimentModel(tree_lstm.NaryTreeLSTM):
         self.W_out.set_value(param_dict['W_out'])
         self.b_out.set_value(param_dict['b_out'])
         self.embeddings.set_value(param_dict['embeddings'])
+
+    def ada_delta(self, loss, rho, eps):
+        '''AdaDelta with Gradient Clipping'''
+        grad = T.grad(loss, self.params)
+        grad_norm = T.sqrt(sum(map(lambda x: T.sqr(x).sum(), grad)))
+        not_finite = T.or_(T.isnan(grad_norm), T.isinf(grad_norm))
+        scaling_den = T.maximum(5.0, grad_norm)
+        updates = OrderedDict()
+
+        for n, (param, grad, grad_sq_old, delta_sq_old) in enumerate(zip(self.params, grad, self.gradients_sq, self.deltas_sq)):
+            grad = T.switch(not_finite, 0.01 * param,
+                            grad * (5.0 / scaling_den))
+            grad_sq_new = rho*grad_sq_old + (1-rho)*(grad**2)
+            delta = (T.sqrt(delta_sq_old+eps)/T.sqrt(grad_sq_new+eps))*grad
+            delta_sq_new = rho*delta_sq_old + (1-rho)*delta**2
+            updates[param] = param - delta
+            updates[grad_sq_old] = grad_sq_new
+            updates[delta_sq_old] = delta_sq_new
+        return updates
