@@ -9,18 +9,19 @@ from theano.compat.python2x import OrderedDict
 
 class SentimentModel(tree_lstm.NaryTreeLSTM):
     def __init__(self, *args, **kwargs):
-        ada_delta = kwargs.pop('ada_delta')
+        self.ada_delta = kwargs.pop('ada_delta')
         #call super instructor
         super(SentimentModel, self).__init__(*args, **kwargs)
 
-        if ada_delta:
+        print('ADA DELTA:', self.ada_delta)
+        if self.ada_delta:
             # initialize intermediate update storage
             self.gradients_sq = [theano.shared(np.zeros(p.get_value().shape, dtype=theano.config.floatX)) for p in
                                  self.params]
             self.deltas_sq = [theano.shared(np.zeros(p.get_value().shape, dtype=theano.config.floatX)) for p in
                               self.params]
 
-            updates = self.gradient_descent(self.loss)
+            updates = self.ada_delta(self.loss)
 
             train_inputs = [self.x, self.tree, self.y]
             if self.labels_on_nonroot_nodes:
@@ -120,7 +121,7 @@ class SentimentModel(tree_lstm.NaryTreeLSTM):
         self.b_out.set_value(param_dict['b_out'])
         self.embeddings.set_value(param_dict['embeddings'])
 
-    def ada_delta(self, loss, rho, eps):
+    def ada_delta(self, loss, rho=0.95, eps=1e-8):
         '''AdaDelta with Gradient Clipping'''
         grad = T.grad(loss, self.params)
         grad_norm = T.sqrt(sum(map(lambda x: T.sqr(x).sum(), grad)))

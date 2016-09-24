@@ -1,6 +1,5 @@
 from data_handling import db_handling
 from data_handling import data_prep
-from data_handling import tweet
 from model import SentimentModel
 from TreeLSTM import data_utils
 
