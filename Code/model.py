@@ -9,12 +9,12 @@ from theano.compat.python2x import OrderedDict
 
 class SentimentModel(tree_lstm.NaryTreeLSTM):
     def __init__(self, *args, **kwargs):
-        self.ada_delta = kwargs.pop('ada_delta')
+        self.use_ada_delta = kwargs.pop('ada_delta')
         #call super instructor
         super(SentimentModel, self).__init__(*args, **kwargs)
 
-        print('ADA DELTA:', self.ada_delta)
-        if self.ada_delta:
+        print('ADA DELTA:', self.use_ada_delta)
+        if self.use_ada_delta:
             # initialize intermediate update storage
             self.gradients_sq = [theano.shared(np.zeros(p.get_value().shape, dtype=theano.config.floatX)) for p in
                                  self.params]
@@ -92,7 +92,12 @@ class SentimentModel(tree_lstm.NaryTreeLSTM):
         param_dict['b_out'] = self.b_out.get_value()
         param_dict['embeddings'] = self.embeddings.get_value()
 
-        assert len(param_dict) == len(self.params)
+        if self.use_ada_delta:
+            param_dict['gradients_sq'] = [p.get_value() for p in self.gradients_sq]
+            param_dict['deltas_sq'] = [p.get_value() for p in self.deltas_sq]
+
+        assert (not self.use_ada_delta and len(param_dict) == len(self.params)) or \
+               (self.use_ada_delta and len(param_dict) == (len(self.params)+2))
 
         if pickle_file_path:
             pickle.dump(param_dict, open(pickle_file_path, 'wb'))
@@ -103,7 +108,8 @@ class SentimentModel(tree_lstm.NaryTreeLSTM):
         assert param_dict or pickle_file_path
         if pickle_file_path and not param_dict:
             param_dict = pickle.load(open(pickle_file_path, 'rb'))
-        assert len(param_dict) == len(self.params)
+        assert (not self.use_ada_delta and len(param_dict) == len(self.params)) or \
+               (self.use_ada_delta and len(param_dict) == (len(self.params)+2))
 
         self.W_i.set_value(param_dict['W_i'])
         self.U_i.set_value(param_dict['U_i'])
@@ -120,6 +126,13 @@ class SentimentModel(tree_lstm.NaryTreeLSTM):
         self.W_out.set_value(param_dict['W_out'])
         self.b_out.set_value(param_dict['b_out'])
         self.embeddings.set_value(param_dict['embeddings'])
+
+        if self.use_ada_delta:
+            assert len(param_dict['gradients_sq']) == len(self.gradients_sq)
+            assert len(param_dict['deltas_sq']) == len(self.deltas_sq)
+            for grad_sq_ten, delta_sq_ten, grad_sq_val, delta_sq_val in zip(self.gradients_sq, self.deltas_sq, param_dict['gradients_sq'], param_dict['deltas_sq']):
+                grad_sq_ten.set_value(grad_sq_val)
+                delta_sq_ten.set_value(delta_sq_val)
 
     def ada_delta(self, loss, rho=0.95, eps=1e-8):
         '''AdaDelta with Gradient Clipping'''

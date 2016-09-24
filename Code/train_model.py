@@ -82,11 +82,14 @@ def train(vocab, data, param_initialization = None, param_load_file_path = None,
     logging.info('num labels: ' + str(num_labels))
 
     model = get_model(num_emb, num_labels, max_degree)
+    logging.info('Initialized new model')
 
     if param_initialization:
         model.set_params(param_initialization)
+        logging.info('set params')
     elif param_load_file_path:
         model.set_params(pickle_file_path=param_load_file_path)
+        logging.info('loaded param initialization')
     else:
         # initialize model embeddings with GloVe
         model.initialize_model_embeddings(vocab, GLOVE_DIR)
@@ -125,8 +128,10 @@ def train(vocab, data, param_initialization = None, param_load_file_path = None,
         metrics_dict = add_to_metrics_dict(metrics_dict, avg_loss, dev_accuracy, f1_score, conf_matrix)
         logging.info('dev accuracy ' + str(dev_accuracy) + ' f1 score ' + str(f1_score))
 
-    if metrics_dump_path:
-        pickle.dump(metrics_dict, open(metrics_dump_path, 'wb'))
+        if metrics_dump_path:
+            pickle.dump(metrics_dict, open(metrics_dump_path, 'wb'))
+
+
 
     return model.get_params(param_dump_file_path), metrics_dict
 
@@ -178,8 +183,8 @@ def train_on_sent140(vocab_file_path = VOCAB_FILE, param_initialization = None,
     return train(vocab, data, data_batched=True, metrics_dump_path=dump_dir + 'metrics.pickle',
                  param_initialization=param_initialization, param_dump_file_path=dump_dir + 'params.pickle')
 
-def train_on_tweets_collected(vocab_file_path = VOCAB_FILE, param_initialization = None, num_epochs=NUM_EPOCHS,
-                              dump_dir='../Data/tweets_collected/dump/'):
+def train_on_tweets_collected(vocab_file_path = VOCAB_FILE, num_epochs=NUM_EPOCHS,
+                              dump_dir='../Data/tweets_collected/dump/', param_load_file_path=None):
     vocab = load_vocab(vocab_file_path)
 
     # pass data as dict with dump file paths (indicated by data_batched=True)
@@ -189,7 +194,7 @@ def train_on_tweets_collected(vocab_file_path = VOCAB_FILE, param_initialization
     data['train'] = [train_dir + file for file in os.listdir(train_dir)]
     data['dev'] = [dev_dir + file for file in os.listdir(dev_dir)]
     return train(vocab, data, data_batched=True, metrics_dump_path=dump_dir + 'metrics.pickle', num_epochs=num_epochs,
-                 param_initialization=param_initialization, param_dump_file_path=dump_dir + 'params.pickle')
+                 param_load_file_path=param_load_file_path, param_dump_file_path=dump_dir + 'params.pickle')
 
 def train_on_sst(vocab_file_path = VOCAB_FILE, param_initialization = None, num_epochs=NUM_EPOCHS,
                               dump_dir='../Data/sst/dump/'):
