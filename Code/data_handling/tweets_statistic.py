@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import operator
 
-def ticker_histogram(tweets_df, number_of_tickers = 8):
+def ticker_histogram(tweets_df, number_of_tickers = 30):
     ticker_tally = {}
     number_of_tweets = len(tweets_df.index)
     for ticker in db_handling.Dow_Jones_Tickers.keys():
@@ -35,24 +35,26 @@ def histo_normdist_plot(data_array, xrange, xlabel = None, ylabel = None):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     _, bins, patches = ax.hist(data_array, 50, range=xrange, normed=True, facecolor='grey')
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
 
     #normal dist
     sd = np.std(data_array)
     mu = np.mean(data_array)
+    print('sd: ', sd, 'mu ', mu)
     bincenters = 0.5 * (bins[1:] + bins[:-1])
     y_norm = mlab.normpdf(bincenters, mu, sd)
     ax.plot(bincenters, y_norm, 'r--', linewidth=1, color = 'black')
     if xlabel:
-        plt.xlabel(xlabel)
+        plt.xlabel(xlabel, fontsize=18)
     if ylabel:
-        plt.ylabel(ylabel)
+        plt.ylabel(ylabel, fontsize=18)
 
     plt.show()
 
 def tweets_with_one_ticker(tweets_df):
     colsum = colsum_ticker_occurance_count(tweets_df)
     return tweets_df[colsum == 1]
-
 
 def dict_as_lists(dict, descending = True, max_number = None):
     ordered_tuples = sorted(dict.items(), reverse=descending, key=operator.itemgetter(1))
@@ -64,6 +66,19 @@ def dict_as_lists(dict, descending = True, max_number = None):
         if max_number and n-1 >= max_number:
             break
     return key_array, value_array
+
+def momentum_adadelta_performance_comp_plot():
+    dev_loss_0 = [0.722225, 0.721471, 0.718549, 0.715227, 0.711542, 0.707376, 0.702472, 0.696637, 0.689834, 0.682137]
+    dev_loss_1 = [0.716518, 0.701954, 0.690057, 0.66859, 0.636063, 0.590728, 0.53733, 0.469327, 0.404491, 0.338704]
+
+    plt.style.use('ggplot')
+    plt.plot(np.arange(1, 11), dev_loss_0, linewidth=2.0)
+    plt.plot(np.arange(1, 11), dev_loss_1, linewidth=2.0)
+    plt.ylim([0.0, 1.0])
+    plt.xlabel('epoch')
+    plt.ylabel('avg training loss')
+    plt.legend(['Momentum SGD', 'AdaDelta'], loc='upper right')
+    plt.show()
 
 class Tweets_Statistic:
 
