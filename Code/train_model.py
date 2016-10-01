@@ -30,6 +30,7 @@ SENT140_PATH = '../Data/sentiment140/'
 TWEETS_COLLECTED_DIR = '../Data/tweets_collected/'
 SST_DIR_PATH = '../Data/sst/'
 VOCAB_FILE = '../Data/vocab_merged.txt'
+SANDERS_SST_FUSION_PATH = '../Data/sanders_sst_fusion/'
 
 
 def get_model(num_emb, output_dim, max_degree):
@@ -45,7 +46,7 @@ def train(vocab, data, param_initialization = None, param_load_file_path = None,
     #set seed
     np.random.seed(SEED)
 
-    logging.info(" --- STARTED TRAINING SESSION: " + str(datetime.datetime.now()) + ' ---')
+    logging.info('\n' + " --- STARTED TRAINING SESSION: " + str(datetime.datetime.now()) + ' ---')
 
     assert type(data) is dict
 
@@ -112,26 +113,30 @@ def train(vocab, data, param_initialization = None, param_load_file_path = None,
                     model.get_params(pickle_file_path=param_dump_file_path)
                     logging.info('Dumped model parameters to: ' + param_dump_file_path)
 
+                dev_accuracy, f1_score, conf_matrix = evaluate_dataset(model, dev_set)
+                metrics_dict = add_to_metrics_dict(metrics_dict, avg_loss, dev_accuracy, f1_score, conf_matrix)
+                logging.info('dev accuracy ' + str(dev_accuracy) + ' f1 score ' + str(f1_score))
+                if metrics_dump_path:
+                    pickle.dump(metrics_dict, open(metrics_dump_path, 'wb'))
+
                 batches_left += -1
-                print('----- Estimateed time till finish: ' + str((time.clock() - ts)*batches_left) + ' sec')
+                logging.info('----- Estimateed time till finish: ' + str((time.clock() - ts)*batches_left) + ' sec')
                 ts = time.clock()
 
         else:
             logging.info('EPOCH ' + str(epoch))
             avg_loss = train_dataset(model, train_set)
             logging.info('avg loss ' + str(avg_loss))
+
+            dev_accuracy, f1_score, conf_matrix = evaluate_dataset(model, dev_set)
+            metrics_dict = add_to_metrics_dict(metrics_dict, avg_loss, dev_accuracy, f1_score, conf_matrix)
+            logging.info('dev accuracy ' + str(dev_accuracy) + ' f1 score ' + str(f1_score))
+            if metrics_dump_path:
+                pickle.dump(metrics_dict, open(metrics_dump_path, 'wb'))
+
             if param_dump_file_path:
                 model.get_params(pickle_file_path=param_dump_file_path)
                 logging.info('Dumped model parameters to: ' + param_dump_file_path)
-
-        dev_accuracy, f1_score, conf_matrix = evaluate_dataset(model, dev_set)
-        metrics_dict = add_to_metrics_dict(metrics_dict, avg_loss, dev_accuracy, f1_score, conf_matrix)
-        logging.info('dev accuracy ' + str(dev_accuracy) + ' f1 score ' + str(f1_score))
-
-        if metrics_dump_path:
-            pickle.dump(metrics_dict, open(metrics_dump_path, 'wb'))
-
-
 
     return model.get_params(param_dump_file_path), metrics_dict
 
@@ -216,3 +221,12 @@ def add_to_metrics_dict(metrics_dict, avg_loss, dev_accuracy, f1_score, conf_mat
     metrics_dict['f1_score'].append(f1_score)
     metrics_dict['conf_matrix'].append(conf_matrix)
     return metrics_dict
+
+def train_on_sst_and_sanders(num_epochs=30, param_initialization = None):
+    vocab = pickle.load(open(SANDERS_SST_FUSION_PATH + 'vocab.pickle', 'rb'))
+    dump_dir = SANDERS_SST_FUSION_PATH + 'dump/'
+    data = {}
+    data['train'] = pickle.load(open(SANDERS_SST_FUSION_PATH + 'train.pickle', 'rb'))
+    data['dev'] = pickle.load(open(SANDERS_SST_FUSION_PATH + 'dev.pickle', 'rb'))
+    return train(vocab, data, metrics_dump_path=dump_dir + 'metrics.pickle', num_epochs=num_epochs,
+                 param_initialization=param_initialization, param_dump_file_path=dump_dir + 'params.pickle')
