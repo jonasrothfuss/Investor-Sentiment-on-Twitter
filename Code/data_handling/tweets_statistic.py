@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import operator
 
+
 def ticker_histogram(tweets_df, number_of_tickers = 30):
     ticker_tally = {}
     number_of_tweets = len(tweets_df.index)
@@ -78,6 +79,27 @@ def momentum_adadelta_performance_comp_plot():
     plt.xlabel('epoch')
     plt.ylabel('avg training loss')
     plt.legend(['Momentum SGD', 'AdaDelta'], loc='upper right')
+    plt.show()
+
+def vader_1h_lag_scatterplot(tweets_df):
+    profit_array = []
+    trade_strategy_array = []
+    for score, lag in zip(tweets_df['vader_compound'], tweets_df['lag']):
+        if score > 0.4:
+            trade_strategy = 1.0
+        elif score < -0.4:
+            trade_strategy = -1.0
+        else:
+            trade_strategy = 0.0
+        profit_array.append(trade_strategy * lag)
+        trade_strategy_array.append(trade_strategy)
+    print(np.mean(profit_array))
+    plt.style.use('ggplot')
+    plt.scatter(tweets_df['vader_compound'], tweets_df['lag'])
+    plt.xlim([-1.0, 1.0])
+    plt.ylim([-0.06, 0.06])
+    plt.xlabel('VADER sentiment score', fontsize=18)
+    plt.ylabel('1h stock price reaction', fontsize=18)
     plt.show()
 
 class Tweets_Statistic:
