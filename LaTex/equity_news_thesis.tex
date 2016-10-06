@@ -21,6 +21,11 @@
 \usepackage{epstopdf}
 %\usepackage{todonotes}
 \usepackage{versionPO}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{multirow}
+
+
 
 % TR EDIT
 \usepackage{dcolumn}
@@ -101,6 +106,7 @@
 %\geometry{left=1in,right=1in,top=1.00in,bottom=1.0in}
 \begin{document}
 
+
 \begin{titlepage}
     \topskip0cm
     \begin{center}
@@ -144,35 +150,33 @@
 
 \setcounter{page}{1}\renewcommand{\thepage}{\arabic{page}}
 \section{Introduction}
-Stuff
 
-\section{Preprocessing}
-Random citation \cite{Socher2011} embeddeed in text.
-
-\section{Natural Language Processing and Sentiment Analysis}
+\section{Sentiment Analysis}
 Sentiment Analysis is considered as one of the major task of Natural Language Processing (NLP). Whilst the problem formulation in other fields of NLP such as part-of-speech tagging is relatively clear, sentiment analysis is a broader category of tasks consisting of multiple problem dimension. 
 
-One basic problem dimension with respect to sentiment is the analysis of polarity: "Given an opinionated piece of text, wherein it is assumed that the overall opinion in it is about one single issue or item, classify the opinion as falling under one of two opposing sentiment polarities, or locate its position on the continuum between these two polarities" \citep{Pang.2008}. Most common is the so called sentiment polarity classification which is a binary classification that distinguished between "positive" and "negative" sentiment. Early research conducted in this area mainly focuses on pieces of text that clearly express the author's subjective opinion on a specific entity. Typical problem sets with regard to sentiment polarity are reviews. One of the most discussed tasks in research is the classification of movie review sentiment as initially addressed in \citet{Pang2002} and \citet{Turney2002}.
+One basic problem dimension with respect to sentiment is the analysis of polarity: "Given an opinionated piece of text, wherein it is assumed that the overall opinion in it is about one single issue or item, classify the opinion as falling under one of two opposing sentiment polarities, or locate its position on the continuum between these two polarities" \citep{Pang.2008}. Most common is the so called sentiment polarity classification which is a binary classification that distinguishes between "positive" and "negative" sentiment. Early research conducted in this area mainly focuses on pieces of text that clearly express the author's subjective opinion on a specific entity. Typical problem sets with regard to sentiment polarity are reviews. One of the most discussed tasks in research is the classification of movie review sentiment as initially addressed in \citet{Pang2002} and \citet{Turney2002}.\\
 
-Another problem dimension of sentiment analysis is to distinguish between subjective and objective text. Whether the author only states facts or expresses his/her subjective opinion within a piece of text interferes with sentiment polarity detection. Subjective texts tend to contain more attributive verbs and verbs (e.g. to adore, to hate, terrible, fantastic, good, bad) which indicate the underlying sentiment. Thus, deciding on sentiment polarity given a subjective statement is usually easier in comparison to objective text. \citet{Pang2004} even showed that removing objective passages and sentences from a text when determining sentiment polarity can improve the performance.
+Aside from binary polarity classification, there has been research capturing sentiment on a multi-way scale \citep{Snyder2007a} and fine-grained sentiment classification with three or more classes (\cite{Pang2005}; \cite{Socher2013}).\\
+
+Another problem dimension of sentiment analysis is to distinguish between subjective and objective text. Whether the author only states facts or expresses his/her subjective opinion within a piece of text interferes with sentiment polarity detection. Subjective texts tend to contain more attributive verbs and adjectives (e.g. to adore, to hate, terrible, fantastic, good, bad) which indicate the underlying sentiment. Thus, deciding on sentiment polarity given a subjective statement is usually easier in comparison to objective text. \citet{Pang2004} even showed that removing objective passages and sentences from a text when determining sentiment polarity can improve the performance.
 
 However, text data for sentiment classification does not always have to be strongly opinionated. News can be considered as good or bad without being subjective \citep{Pang.2008}. By just mirroring facts like "IPhone sales increased by 25\% in the first quarter" a piece of news can be positive or negative for an underlying entity such as the company or the respective stock. Hence, classifying equity news according to its impact on stock prices has been considered sentiment classification in the literature as well \citep{Koppel2006}.\\
 
-Also sentiment analysis varies in its scope. Tasks within the domain range from document level, such as deciding on the positivity/negativity of web reviews consisting of multiple sentences to phrase level sentiment such as short comments in social media.
+\subsection{Features and Models}
+
+Sentiment analysis varies in its scope. Tasks within the domain range from document level, such as deciding on the positivity/negativity of web reviews consisting of multiple paragraphs or sentences to phrase level sentiment, e.g. short comments in social media. Due to the variety in scope, different sentiment related tasks might require very different approaches, especially with regard to the features used for the analysis. According to \citet{Asghar2014} there are three types of morphological features: semantic,  syntactic and lexico structural. Semantic features are based on contextual information or semantic orientation. Typical unsupervised methods which are used to determine the semantic orientation of words and phrases are Latent Semantic Analysis (LSA) and Point Wise Mutual Information (PMI) (\cite{Turney2002}; \cite{Turney2003}). Syntax type features use NLP tools such as Part of Speech Tagging (POS), n-grams and word dependencies. Lexico structural features provide statistical information about a text such as word distribution and special symbol frequencies.\\
+
+
+Less recent sentiment analysis approaches use so called Bag-of-Word models where text is represented as multiset. As these models are indifferent to word order, syntactic features and semantic compositionality are neglected entirely. Often Bag-of-Word models are used in combination with a sentiment lexicons that list relevant words with their respective sentiment polarity.
+
+While sentiment analysis solely based on semantic orientation of words and their frequency within a text works well for longer documents, short text usually require more sophisticated approaches that combine multiple types of features. An explanation is that attributive verbs and adjectives as well a nouns that contain information on sentiment polarity occur in a certain frequency within a text. Thus, longer pieces of text usually contain more such words and phrases. When accumulating the information on semantic orientation throughout a longer document, the sentiment polarity can be predicted relatively accurate (e.g. 74\% accuracy on reviews in \citet{Turney2002}). However, short pieces of text such as a single sentences do not contain enough words that are rich of information on sentiment polarity when viewed isolated. Instead, it is necessary to capture the interaction of semantic as well as syntactical features; in particular, how words and phrases are arranged within an expression and semantically interact.\\
+
+A challenge in NLP is to craft features that represent the characteristics of natural language (i.e. syntax and semantic) and at the same time are convenient to process and analyse mathematically. An approach that gained huge popularity in NLP are vector space models, initially introduced by \citet{Salton1975}. Vector space models represent words as vectors in a continuous space (i.e. $\mathbb{R}^n$). Semantically related words are located in the same region of the vector space. Although a multitude of methods to generate semantic vector spaces have been introduced and utilized, they all "depend in some way or another on the Distributional Hypothesis, which states that words that appear in the same contexts share semantic meaning". A big advantage of semantic vector spaces when compared with other features is the mathematical convenience. Text, represented as numerical vector can be directly used as input for many machine learning methods such as deep learning. 
+
+
 \subsection{Deep Learning in Natural Language Processing}
 
-\section{Data}
-\subsection{Sentiment140}
-
-\subsection{Collected Data}
-
-\begin{figure}[H]
-\captionsetup{justification=centering}
-\centering
-\includegraphics[width=1\textwidth]{graphics/tweet_percentages.pdf}
-\caption{Percentage of collected tweets that contain a respective stock ticker. Displayed are only 8 of 30 tickers with the highest occurance within the tweets. \label{fig:tweet_percentages}}
-\end{figure}
-
+\subsection{Optimization in Deep Learning}
 
 
 \subsection{Tree Structured Long Short-Term Memory Networks}
@@ -237,7 +241,222 @@ $$
 h_j = o_j \odot \text{tanh}(c_j)
 $$
 
-\subsubsection{Subsection}
+\section{Data}
+\subsection{Collecting the Data}
+\begin{figure}
+\captionsetup{justification=centering}
+\centering
+\includegraphics[width=0.7\textwidth]{graphics/tweet_percentages.pdf}
+\caption{Percentage of collected tweets that contain a respective stock ticker. Displayed are only 8 of 30 tickers with the highest occurance within the tweets. \label{fig:tweet_percentages}}
+\end{figure}
+
+Over a time period of 10 month, beginning in October 2015 we collected more than two million tweets via the TwitterAPI. All of the tweets are written in English language and contain at least one ticker symbol of the 30 firms in the Dow Jones Industrial Average (e.g. \$AAPL). 45\% of the collected tweets are re-tweets thus not providing any new text or content. More than 85\% of tweets only contain one stock ticker. However, the amount of tweets referring a specific stock varies significantly. While  more than half of the tweets refer to Apple of Microsoft, firms like United Technology Corporation or United Health Group get only little attention on Twitter. Figure \ref{fig:tweet_percentages} illustrates how the stock mentions throughout the collected tweets are distributed among the firms.
+
+\subsection{Preprocessing and cleaning}
+Before sentiment analysis or other NLP tasks are performed it is important to preprocess and clean the text data. First, this includes removing data that is duplicate, corrupted or not relevant to the task. Thus, I remove all re-tweets as they a are duplicates of tweets that have already been posted.
+
+Second, transforming and cleaning the text to unify the format and reduce unnecessary variance within the text can significantly improve the performance of NLP procedures. Main goal is to keep the required vocabulary as small as possible without compromising too much information. With regard to this, I perform following steps:
+
+\begin{itemize}
+\item transform the text to lower case
+\item replace hyperlinks with the generic term 'url'
+\item replace user mentions such as '@celine22' with 'user'
+\item limit question and exclamation marks to two in a row
+\item delete the '\#' sign in front of hash tags
+\item replace stock tickers with the corresponding company name \\ e.g. '\$MSFT' $\longrightarrow$ 'microsoft'
+\item remove multiple-dot punctuation; e.g. '....' $\longrightarrow$ '.'
+\end{itemize}
+
+
+\subsection{Labelling \label{labelling}}
+For tweets that were posted within the New York Stock Exchange trading hours (14:30 UTC to 21:00 UTC) I calculated 30 minutes and 1 hour stock price response $r$
+$$
+r_{30\text{min}} = \frac{p(t_{post} + 30~\text{min})}{p(t_{post})} - 1
+$$
+
+$$
+r_{1 \text{h}} = \frac{p(t_{post} + 60~\text{min})}{p(t_{post})} - 1
+$$
+
+where $t_{post}$ denotes the time at which the tweet was posted and $p(t)$ the corresponding stock price at time $t$.
+
+The stock price responses are approximately normal distributed (Figure \ref{fig:lags_hist}) with $\mu \approx 0$. As one would expect the 1 hour stock price responses have a higher variance than the 30 min price movements.\\
+
+In order to perform sentiment classification with machine learning methods it was necessary create discrete labels for the tweets. Correspondent to the stock price responses $r_{30\text{min}}$ respectively $r_{1 \text{h}}$, I assigned one of the labels "negative", "neutral" and "positive" each. Tweets with a stock price response ranging among the 25\% most negative price responses were assigned the label "negative", tweets with $r$ among the 25\% most positive price responses "positive" and the remaining tweets "neutral". The label assignment approach can be formally expressed through a mathematical map that utilizes the 25th and 75th percentile of the price responses to distinguish between the three sentiment labels:
+
+$$ 
+ l(r) =
+   \begin{cases}
+     \text{"positive"} & \text{if } r \geq p_{75}\\
+     \text{"neutral"}  & \text{if }  p_{25} < r < p_{75} \\
+     \text{"negative"}  & \text{if } r \leq p_{25}
+   \end{cases}
+$$
+
+
+
+
+\begin{figure}
+\captionsetup{justification=centering}
+ \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth]{graphics/30min_lag_dist.pdf}
+        \caption{30 min lag}
+   \end{subfigure}
+ \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \includegraphics[width=1\textwidth]{graphics/1h_lag_dist.pdf}
+        \caption{1 hour lag}
+   \end{subfigure}
+\caption{Distribution of relative stock price response corresponding to a tweet a) 30 minutes b) 1 hour after the tweet has been posted and normal distribution with estimated $\mu$ and $\sigma$  \label{fig:lags_hist}}
+\end{figure}
+
+
+
+\section{Sentiment Analysis}
+
+\subsection{Lexicon Based Methods} \label{lexicon-based}
+Many state-of-practice sentiment analysis benchmarks rely on sentiment lexica to supply features. In its core, these lexica contain lists of words associated with a sentiment label or score . Given a text, words listed in the lexicon are extracted from the text and annotated with their sentiment value, using the dictionary scores. Finally, the sentiment scores are aggregated into a single score or label for the entire text document \citep{Taboada2011}.\\
+
+Typical state-of-practice benchmarks in the domain of lexicon based sentiment analysis are the General Inquirer \citep{Stone1966}, Linguistic Inquiry and Word Count (LIWC) \citep{Pennebaker2001, Pennebaker2007}, as well as SentiWordNet (SWN) \citep{Baccianella2010}.
+
+
+\subsubsection{Handcrafted Sentiment Lexicon}
+\subsubsection{Valence Aware Dictionary for Sentiment Reasoning (VADER)}
+As traditional lexicon based sentiment models like the General Inquirer or LIWC were developed with focus on longer text documents, the nature of microblog content "poses serious challenges to practical applications of sentiment analysis. Some of these challenges stem from the [...] contextual sparseness resulting from shortness of the text and a tendency to use abbreviated language conventions to express sentiments" \citep{Hutto2014}
+
+Addressing this issue, \citet{Hutto2014} presented a rule-based sentiment model with underlying dictionary called VADER. They created a lexicon attuned for miroblog texts by aggregating lexical features from well-established, existing sentiment lexica and supplementing additional lexical features that are frequently used in social media (e.g. emoticons, acronyms etc.). In addition, they formulated five simple rules that "embody grammatical and syntactic conventions that humans use when expressing or emphasizing sentiment intensity" \citep{Hutto2014}. 
+
+When validation the 3-class classification performance of VADER in four distinct domain contexts (Social Media, Product Reviews, Movie Reviews and NY Times Editorials), it dominates all other established sentiment lexicon baselines by F1 score. Especially when classifying Tweets, with a F1 score of 0.96 VADER significantly outperforms other lexicon based models (F1 score $\leq$ 0.77).
+
+As VADER appears to be the most suited lexicon based sentiment analysis tool for this purpose, I use VADER to generate a sentiment scores for each of the collected Tweets, attempting to predict the corresponding stock price responses. Negative, positive and neutral sentiment features are each aggregated into an intensity score from 0 to 1. Then the three intensity scores can be combined to compound sentiment score ranging from -1 to 1. A negative score indicates negative sentiment polarity, whereas positive sentiment is suggested by positives scores.
+
+To examine if the calculated VADER sentiment scores can forecast stock price movements I correlate the compound sentiment score with the corresponding 30 minute and 1h stock price response (see section \ref{labelling}). For both 30 minute and 1 hour lag the the Pearson correlation coefficient $\rho$ is slightly negative and smaller than 0.01 by its magnitude ($\rho_{30min}=-0.0095$ and $\rho_{1h}=-0.0007$).
+
+Since the $\rho$ is close to 0, exploiting VADER sentiment scores for a profitable trading strategy seems to be little promising. To further validate, I build a simple hand-crafted classifier that assigns each Tweet a sentiment label 'positive' when its compound sentiment score exceeds the positive threshold $t$ and 'negative' when the score is negative and smaller than $-t$. Tweets with a score within the threshold boundaries $[-t,t]$ are classified as 'neutral'. The classifier can formulated mathematically as follows:
+
+$$ 
+ c(s) =
+   \begin{cases}
+     \text{"positive"} & \text{if } s \geq +t\\
+     \text{"neutral"}  & \text{if } -t < s < +t \\
+     \text{"negative"}  & \text{if } s \leq -t
+   \end{cases}
+$$
+
+Based on the the 3-class sentiment classification a simple trading strategy shall be assessed: If a Tweet is classified as 'positive' buy the corresponding stock and hold it for 30 min / 1 hour. If a Tweet has was assigned the sentiment label 'negative' make a short sell and hold the position for 30 min / 1 hour. The estimated profit $\tilde{p}$ per trade when implementing the strategy for different classification boundaries $t$ is illustrated in figure \ref{fig:vader_class_threshold}. 
+
+To reject the Hypothesis that the trading strategy based on VADER sentiment analysis does not lead to any excess return ($H_0: \tilde{p} \leq 0$) with $\alpha = 0.05$, an estimated profit of at least 0.6\% would be required for 30 min lags and 0.81\% for 1 hour lags, respectively. Since the maximal profit that could be reached with the  VADER based trading strategy (0.00107\%) is significantly smaller, there is little evidence that lexicon based sentiment analysis on equity tweets can forecast stock price movements within the range of one hour.
+
+
+\begin{figure}
+\captionsetup{justification=centering}
+\centering
+\includegraphics[width=0.9\textwidth]{graphics/vader_classification_theshold.pdf}
+\caption{Estimated profit per trade when going long if VADER compound score $>t$ and short if sentiment score $< -t$; long/short position is hold for a) 30 min b) 1 hour \label{fig:vader_class_threshold}}
+\end{figure}
+
+\begin{table} 
+\centering
+\captionsetup{justification=centering}
+\begin{tabular}{ |l|c|c|}
+\hline
+ & correlation & p-value \\ \hline
+30 min lag & $-0.0095$ & $5.47 * 10^{-5}$\\ \hline
+1 hour lag & $-0.0007$ & $0.7597$ \\ \hline
+\end{tabular}
+\caption{5-fold cross validation metrics for various supervised 3-class sentiment classification methods based on word occurance features. Estimated profit per trade when going long at positive assigned label and short when negative sentiment is predicted. One trade: holding short/long position for a) 30 minutes b) 1 hour\label{table:bag-of-words-results}}
+\end{table}
+
+\subsection{Machine Learning Methods}
+Despite the fact that sentiment classification methods based on feature lexica (Section \ref{lexicon-based}) have a long tradition in NLP, machine learning approaches gained popularity in the domain of sentiment analysis throughout the last decade. Building and maintaining comprehensive sentiment lexica and semantic rules (e.g. for negation) demands strong expertise and extensive effort from linguists.
+
+In contrast, modern machine learning methods do not require sophisticated hand crafted features as input. Commonly used classifiers such as Naive Bayes or Support Vector Machines were shown to work well with simple word or bi-gram occurrence counts \citep{Pang2002}. 
+
+A more recent development in sentiment analysis is feature learning. "It allows to learn expressive features for the documents directly from the raw data" \citep{Albertini2014}. In fact, machine learning algorithms such as in \citet{Socher2011a} and \citet{Maas2011} are used to generate continuous vector-space representation for words and phrases. Based on learned word vector features, powerful deep learning methods have been used in latest research to perform sentiment analysis.
+
+Although the use of machine learning approaches helps to avoid manual annotations or hand-crafted heuristic rules it requires a substantial amount of training data that can be costly to obtain.
+
+\subsubsection{Classification based on word occurrence counts}
+In this section a simple machine learning base-line model for sentiment classification shall be introduced. Occurrence counts of distinct words and tokens in the tweets as are used as features. To produce these features, the tweets are split up into tokens and words the tweets, followed by creating a token-count matrix. Given $N$ tweets and $V$ as set of all tokens occurring among the tweets, the token-count matrix is defined as $C \in \mathbb{N}^{n \times |V|}$, where $c_{i,j}$ denotes the number of times token/word $j$ occurs in tweet $j$.  Due to the short length of a tweet and sparsity of the set of possible tokens/words, most counts $c_{i,j}$ are 0.\\
+
+Using the token-count matrix $C$ as input, three different machine learning classifiers are applied, attempting to predict the the sentiment class of a tweet as assigned in \ref{labelling}. I use 5-fold cross validation to determine classification accuracy and F1 score. Moreover, I calculate the estimated profit per trade of a trading strategy based on the classifiers sentiment predictions. The trading strategy can be formulated the following way: 
+\begin{itemize}
+\item If positive sentiment is predicted go long and hold the position  for 30 min respectively 1h
+\item If neutral sentiment is predicted do not trade the stock corresponding to the tweet
+\item If positive sentiment is predicted go short and hold the position  for 30 min respectively 1h
+\end{itemize}
+
+
+The evaluation of the classification methods Naive Bayes, Support Vector Machines and Random Forests is illustrated in table \ref{table:bag-of-words-results}. Considering the F1 score, the Random Forest approach outperforms the other two classifiers by 3 percent points. Nonetheless, an F1 score of less than 0.4 indicates that all three sentiment classifiers do not perform much better than picking one of the classes by chance.
+The estimated profits are close to zero and all of the corresponding p-values are greater than 20\%, concluding that the proposed trading strategy based on the base-line sentiment predictions does not lead to  significant excess returns.
+
+\begin{table}
+\centering
+\captionsetup{justification=centering}
+\begin{tabular}{ |l|l|c|c|c| }
+\hline
+Classifier & metric & 30 min lag & 1 hour lag & 1 day lag \\ \hline
+\multirow{3}{*}{Naive Bayes Classifier} & accuracy & $0.4906$ & $0.4893$ & - \\
+ & F1 score & $0.3534$ & $0.3529$ & - \\
+ & estimated profit & $-9.12 * 10^{-7}$ & $-5.95 * 10^{-6}$ & - \\ \hline
+\multirow{3}{*}{SVM (linear kernel)} & accuracy & $0.4852$ & $0.4795$ & - \\
+ & F1 score & $0.3610$ & $0.3618$ & - \\
+ & estimated profit & $7.041 * 10^{-6}$ & $-2.91 * 10^{-6}$ & - \\ \hline
+\multirow{3}{*}{Random Forests} & accuracy & $0.4509$ & $0.4505$ & - \\
+ & F1 score & $0.3962$ & $0.3947$ & - \\
+ & estimated profit & $4.42 * 10^{-6}$ & $-3.74 * 10^{-6}$ & - \\ \hline
+\end{tabular}
+\caption{5-fold cross validation metrics for various supervised 3-class sentiment classification methods based on word occurance features. Estimated profit per trade when going long at positive assigned label and short when negative sentiment is predicted. One trade: holding short/long position for a) 30 minutes b) 1 hour\label{table:bag-of-words-results}}
+\end{table}
+
+\subsection{Tree-Structure LSTM}
+\subsubsection{Model}
+\subsubsection{Results}
+Accuracy:  0.4867253364886851 \\
+F1 Score 0.353416651925
+
+
+\begin{table}[H]
+\centering
+\captionsetup{justification=centering}
+ \begin{tabular}{|c|l|c|c|c|}
+ \cline{1-5}
+ \multicolumn{2}{|c|}{} & \multicolumn{3}{c|}{predicted label} \\ \cline{3-5}
+ \multicolumn{2}{|c|}{} & \multicolumn{1}{c|}{negative} & \multicolumn{1}{c|}{neutral} & \multicolumn{1}{c|}{positive} \\
+ \hline
+ \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{label}}} & negative & 309 & 6428 & 97\\
+ & neutral & 554 & 12740 & 189\\
+ & positive & 284 & 6329 & 114\\
+ \hline
+ \end{tabular}
+\caption{Confusion matrix based on 30 min lag validation split - Tree LSTM model trained on Standord Sentiment Treebank and Sanders Twitter Sentiment Corpus \label{table:conf_matrix_1}}
+\end{table}
+
+
+\begin{figure}
+\captionsetup{justification=centering}
+\centering
+\includegraphics[width=1\textwidth]{graphics/comp_momentum_adadelta.pdf}
+\caption{Training performance comparison of optimizers: Average training cross-entropy loss troughout the first 10 training epochs when utilizing a) SGD with momentum method and gradient clipping b) AdaDelta with gradient clipping\label{fig:comp_momentum_adadelta}}
+\end{figure}
+
+\newpage
+\section*{List of Abbreviations}
+\begin{longtable}[l]{p{60pt} p{500pt}}
+LIWC & Linguistic Inquirer and Word Count \\
+LSA 	& Latent Semantic Analysis \\
+n-gram & sequence of n items/words in a text \\
+NB & Naive Bayes (Classifier) \\
+NLP 	& Natural Language Processing \\
+PMI 	& Point Wise Mutual Information \\
+POS & Part of Speech Tagging \\
+RNN 	& Recurrent Neural Network	 \\
+SGD	& Stochastic Gradient Descent \\
+SVM & Support Vector Machine \\
+SWN & SentiWordNet \\
+VADER & Valcence Aware Dictionary for Sentiment Reasoning
+\end{longtable}
 
 % Declaration
 \newpage
