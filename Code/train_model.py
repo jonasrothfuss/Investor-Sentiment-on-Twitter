@@ -230,3 +230,20 @@ def train_on_sst_and_sanders(num_epochs=30, param_initialization = None):
     data['dev'] = pickle.load(open(SANDERS_SST_FUSION_PATH + 'dev.pickle', 'rb'))
     return train(vocab, data, metrics_dump_path=dump_dir + 'metrics.pickle', num_epochs=num_epochs,
                  param_initialization=param_initialization, param_dump_file_path=dump_dir + 'params.pickle')
+
+def evaluate_model(vocab_pickle_path, param_load_file_path, validation_data_path):
+    vocab = pickle.load(open(vocab_pickle_path, 'rb'))
+    num_emb = vocab.size()
+    num_labels = NUM_LABELS
+    max_degree = 2
+
+    model = get_model(num_emb, num_labels, max_degree)
+    model.set_params(pickle_file_path=param_load_file_path)
+
+    validation_data = pickle.load(open(validation_data_path, 'rb'))
+
+    accuracy, f1_score, conf_matrix = evaluate_dataset(model, validation_data)
+    print('Accuracy: ', accuracy)
+    print('F1 Score', f1_score)
+    print('Confusion Matrix')
+    print(conf_matrix)
