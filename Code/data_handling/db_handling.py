@@ -242,7 +242,8 @@ def convert_tweets_to_df(tweets_collection, dump_dir_path, section_size = 200000
     collection_size = cursor.count()
     skip_array = [i for i in range(collection_size) if i % section_size == 0]
     cursor.close()
-    for i in range(start_at, len(skip_array)):
+    print(collection_size)
+    for i in range(start_at//section_size, len(skip_array)):
         tweet_storage_dict = create_empty_tweet_storage_dict()
         print("Section", i)
         ts = time.clock()
@@ -251,7 +252,7 @@ def convert_tweets_to_df(tweets_collection, dump_dir_path, section_size = 200000
                 n = 1
                 for tweet_dict in cursor:
                     tweet_storage_dict = add_tweet_to_storage_dict(tweet_storage_dict, tweet_dict)
-                    if n % 20000 == 0:
+                    if n % section_size == 0:
                         print('' + str((skip_array[i] + n) / float(collection_size) * 100.0) + " %    " + "Duration: " + str(
                             time.clock() - ts))
                         ts = time.clock()
@@ -308,3 +309,20 @@ def load_tweets_df(file_path):
 
 def query_by_mongo_id(collection, id_str):
     return collection.find_one({'_id': ObjectId(id_str)})
+
+def prices_csv_to_prices_df():
+    prices_df_vertical = pd.read_csv('/home/jonasrothfuss/Documents/dji_utc_full.csv')
+    first_symbol = True
+    for ticker in Dow_Jones_Tickers:
+        current_panda_frame =prices_df_vertical[prices_df_vertical['ticker']==ticker]
+        del current_panda_frame['ticker']
+        current_panda_frame.columns = ['time', ticker]
+        if not first_symbol:
+            panda_frame = pd.merge(panda_frame, current_panda_frame, how='outer', on=['time', 'time'])
+        else:
+            panda_frame = current_panda_frame
+            first_symbol = False
+    panda_frame.index = panda_frame['time'].apply(lambda x: datetime_from_str(x))
+    del panda_frame['time']
+    panda_frame.sort_index()
+    return panda_frame

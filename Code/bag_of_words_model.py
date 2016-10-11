@@ -1,5 +1,5 @@
 import numpy as np
-
+from data_handling import db_handling
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.ensemble import RandomForestClassifier
@@ -139,14 +139,6 @@ def vader_threshold_profit_plot(tweets_df_30min_lag, tweets_df_1h_lag):
     plt.ylabel('estimated profit per trade', fontsize=14)
     plt.show()
 
-
-    '''
-    plt.bar(range(len(values)), values, align='center', color ='grey')
-    plt.xticks(range(len(tickers)), tickers)
-    plt.xlim((-1, number_of_tickers +2))
-    plt.ylabel('percentage of tweets with respective ticker' + '\n')
-    '''
-
 def classifier_crossval_on_vader_scores(tweets_df, clf=RandomForestClassifier()):
     X_data = tweets_df.as_matrix(columns=['vader_neg', 'vader_neu', 'vader_pos'])
     Y_data = tweets_df['label'].as_matrix()
@@ -186,3 +178,18 @@ def classifier_crossval_on_vader_scores(tweets_df, clf=RandomForestClassifier())
     avg_f1 = np.mean(f1_array)
     print("Overall Accuracy: ", avg_accuracy, "\nOverall Profit", avg_profit, "\nOverall F1:", avg_f1)
     return avg_accuracy, avg_profit, avg_f1
+
+def bulk_sentiment_twitter(start_dt, end_dt, tweets_df, ticker = None, weighted_by_follower = False):
+    assert all([col in tweets_df.columns for col in ['ticker', 'vader_compound', 'created_at']])
+
+
+    if ticker is None or not ticker in db_handling.Dow_Jones_Tickers:
+        relevance_condition = np.logical_and(tweets_df['created_at'] >= start_dt, tweets_df['created_at'] <= end_dt)
+    else:
+        relevance_condition = np.logical_and(np.logical_and(tweets_df['created_at'] >= start_dt, tweets_df['created_at'] <= end_dt), tweets_df['ticker'] == ticker)
+    relevant_tweets = tweets_df[relevance_condition]
+    if weighted_by_follower:
+        aggregated_sent_score = np.sum(relevant_tweets['vader_compound']*relevant_tweets['follower_count'])/(len(relevant_tweets.index)*np.mean(relevant_tweets['follower_count']))
+    else:
+        aggregated_sent_score = np.sum(relevant_tweets['vader_compound'])/len(relevant_tweets.index)
+    return aggregated_sent_score
