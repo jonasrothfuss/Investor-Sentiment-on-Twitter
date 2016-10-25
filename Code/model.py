@@ -57,11 +57,14 @@ class SentimentModel(tree_lstm.NaryTreeLSTM):
     def loss_fn_multi(self, y, pred_y, y_exists): #overwrites the RSS loss
         return T.sum(T.nnet.categorical_crossentropy(pred_y, y) * y_exists)
 
-    def loss_fn(self, y, pred_y): #overwrites the RSS loss
-        return -T.sum(y * T.log(pred_y))
+    def loss_fn(self, y, pred_y, reg_penalty=0.0001): #overwrites the RSS loss
+        return -T.sum(y * T.log(pred_y)) + reg_penalty * self.l2_penalty()
 
-    def loss_fn_multi(self, y, pred_y, y_exists): #overwrites the RSS loss
-        return T.sum(T.sum(T.sqr(y - pred_y), axis=1) * y_exists, axis=0)
+    def l2_penalty(self):
+        return (self.W_i**2).sum() + (self.U_i**2).sum() + (self.b_i**2).sum() + (self.W_f**2).sum() + \
+               (self.U_f**2).sum() + (self.b_f**2).sum() + (self.W_o**2).sum() + (self.U_o**2).sum() + \
+               (self.b_o**2).sum() + (self.W_u**2).sum() + (self.U_u**2).sum() + (self.b_u**2).sum() + \
+               (self.W_out**2).sum() + (self.b_out**2).sum()
 
     def initialize_model_embeddings(self, vocab, glove_dir):
         embeddings = self.embeddings.get_value()
@@ -108,8 +111,6 @@ class SentimentModel(tree_lstm.NaryTreeLSTM):
         assert param_dict or pickle_file_path
         if pickle_file_path and not param_dict:
             param_dict = pickle.load(open(pickle_file_path, 'rb'))
-        assert (not self.use_ada_delta and len(param_dict) == len(self.params)) or \
-               (self.use_ada_delta and len(param_dict) == (len(self.params)+2))
 
         self.W_i.set_value(param_dict['W_i'])
         self.U_i.set_value(param_dict['U_i'])
