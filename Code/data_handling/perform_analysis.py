@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 import numpy as np
 import pandas as pd
+from data_handling import data_prep
 
 from data_handling import db_handling, sentiment, stock_quotes
 import bag_of_words_model
@@ -43,7 +44,6 @@ def setup_logfile(log_file_path):
         return None
 
 def perform_daily_analysis(start_dt, end_dt, stock_symbol, tweets_df, log_file_path = None, pickle_file_path = None):
-
     log_file = setup_logfile(log_file_path)
 
     from_dt_array, to_dt_array, sentiment_array, stock_yield_array = [], [], [], []
@@ -94,13 +94,14 @@ def perform_daily_analysis(start_dt, end_dt, stock_symbol, tweets_df, log_file_p
     return pd_dataframe, correlation, p_val
 
 
-def df_for_granger(tweets_df, ticker):
+def df_for_granger(tweets_df, ticker, add_lags = False, model = None, vocab = None):
     start_dt = datetime.datetime(2015, 10, 23, 21, 0, 0, 0, pytz.UTC)
     end_dt = datetime.datetime(2016, 6, 24, 21, 0, 0, 0, pytz.UTC)
 
+    lstm_model = (model is not None) and (vocab is not None)
+
     fin_data_dict = pickle.load(open('../Data/Finance_Quotes/fin_data_dict.pickle', 'rb'))[ticker]
     fin_data_dict.index = fin_data_dict['Date']
-    print(fin_data_dict)
 
     date_array, sentiment_array, stock_close_array = [], [], []
 
@@ -113,11 +114,18 @@ def df_for_granger(tweets_df, ticker):
             try:
                 # calculate stock yield and sentiment
                 if is_monday(to_dt): #calculate sentiment score over entire weekend
-                    day_sentiment = bag_of_words_model.bulk_sentiment_twitter(to_dt - datetime.timedelta(days=3), to_dt, tweets_df, ticker)
                     day_stock_close = fin_data_dict['Close'][stock_quotes.datetime_to_str(to_dt)] - fin_data_dict['Close'][stock_quotes.datetime_to_str(to_dt - datetime.timedelta(days=3))]
+                    if lstm_model:
+                        day_sentiment = day_sentiment_from_model(to_dt - datetime.timedelta(days=3), to_dt, tweets_df, model, vocab, ticker)
+                    else:
+                        day_sentiment = bag_of_words_model.bulk_sentiment_twitter(to_dt - datetime.timedelta(days=3), to_dt, tweets_df, ticker)
                 else:
-                    day_sentiment = bag_of_words_model.bulk_sentiment_twitter(from_dt, to_dt, tweets_df, ticker)
                     day_stock_close = fin_data_dict['Close'][stock_quotes.datetime_to_str(to_dt)] - fin_data_dict['Close'][stock_quotes.datetime_to_str(from_dt)]
+                    if lstm_model:
+                        day_sentiment = day_sentiment_from_model(from_dt, to_dt, tweets_df, model, vocab, ticker)
+                    else:
+                        day_sentiment = bag_of_words_model.bulk_sentiment_twitter(from_dt, to_dt, tweets_df, ticker)
+
 
                 # append current values to array
                 date_array.append(to_dt.date())
@@ -140,18 +148,19 @@ def df_for_granger(tweets_df, ticker):
                                  'close': stock_close_array,
                                  'sentiment': sentiment_array
                                  })
-    #add lags
-    close_lag = deque(stock_close_array)
-    for i in range(1, 7):
-        close_lag.pop()
-        close_lag.appendleft(np.nan)
-        pd_dataframe['close_lag_' + str(i)] = list(close_lag)
+    if add_lags:
+        #add lags
+        close_lag = deque(stock_close_array)
+        for i in range(1, 7):
+            close_lag.pop()
+            close_lag.appendleft(np.nan)
+            pd_dataframe['close_lag_' + str(i)] = list(close_lag)
 
-    sentiment_lag = deque(sentiment_array)
-    for i in range(1, 7):
-        sentiment_lag.pop()
-        sentiment_lag.appendleft(np.nan)
-        pd_dataframe['sentiment_lag_' + str(i)] = list(sentiment_lag)
+        sentiment_lag = deque(sentiment_array)
+        for i in range(1, 7):
+            sentiment_lag.pop()
+            sentiment_lag.appendleft(np.nan)
+            pd_dataframe['sentiment_lag_' + str(i)] = list(sentiment_lag)
 
     return pd_dataframe
 
@@ -168,3 +177,13 @@ def granger_plot(granger_df):
     plt.legend(['Sentiment Score', 'Movement DJIA'], loc='upper right', fontsize=12)
     plt.ylabel('z-score', fontsize=14)
     plt.show()
+
+def day_sentiment_from_model(start_dt, end_dt, tweets_df, model, vocab, ticker = None):
+    assert all([col in tweets_df.columns for col in ['ticker', 'tweet', 'created_at']])
+    relevant_tweets = data_prep.filter_tweets(tweets_df, start_dt, end_dt, ticker)
+    rnn_trees = data_prep.build_rnn_trees(relevant_tweets['tweet'], np.zeros(len(relevant_tweets.index)), vocab)
+    label_array = []
+    for tree, _ in rnn_trees:
+        pred_y = np.argmax(model.predict(tree)[-1]) - 1
+        label_array.append(pred_y)
+    return np.mean(label_array)
