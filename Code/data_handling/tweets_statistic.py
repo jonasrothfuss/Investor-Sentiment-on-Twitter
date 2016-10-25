@@ -102,6 +102,20 @@ def vader_1h_lag_scatterplot(tweets_df):
     plt.ylabel('1h stock price reaction', fontsize=18)
     plt.show()
 
+def dev_accuaracy_plot():
+    metrics_30min = pd.read_csv('../Data_Clean/result_dump/30min_lag/metrics.csv')
+    metrics_1h = pd.read_csv('../Data_Clean/result_dump/1h_lag/metrics.csv')
+    plt.style.use('ggplot')
+    metrics_30min['dev accuracy'].plot(linewidth=2.0)
+    metrics_1h['dev accuracy'].plot(linewidth=2.0)
+    plt.legend(['30 min lag', '1 hour lag'], loc='upper right')
+    plt.ylim([0.3, 0.45])
+    plt.xlabel('', fontsize=16)
+    plt.ylabel('accuracy', fontsize=16)
+    plt.xticks(list(metrics_30min.index), ['', '', '', 'epoch 1', '', '', '', 'epoch 2', '', '', '', 'epoch 3', '', ''])
+    plt.show()
+
+
 class Tweets_Statistic:
 
 	def __init__(self, tweets=[]):
