@@ -90,7 +90,7 @@ def train(vocab, data, param_initialization = None, param_load_file_path = None,
         logging.info('set params')
     elif param_load_file_path:
         model.set_params(pickle_file_path=param_load_file_path)
-        logging.info('loaded param initialization')
+        logging.info('loaded param initialization from: ' + param_load_file_path)
     else:
         # initialize model embeddings with GloVe
         model.initialize_model_embeddings(vocab, GLOVE_DIR)
@@ -114,14 +114,16 @@ def train(vocab, data, param_initialization = None, param_load_file_path = None,
                     logging.info('Dumped model parameters to: ' + param_dump_file_path)
 
                 dev_accuracy, f1_score, conf_matrix = evaluate_dataset(model, dev_set)
-                metrics_dict = add_to_metrics_dict(metrics_dict, avg_loss, dev_accuracy, f1_score, conf_matrix)
                 logging.info('dev accuracy ' + str(dev_accuracy) + ' f1 score ' + str(f1_score))
-                if metrics_dump_path:
-                    pickle.dump(metrics_dict, open(metrics_dump_path, 'wb'))
 
                 batches_left += -1
-                logging.info('----- Estimateed time till finish: ' + str((time.clock() - ts)*batches_left) + ' sec')
+                logging.info('----- Estimated time till finish: ' + str((time.clock() - ts)*batches_left) + ' sec')
                 ts = time.clock()
+
+        #persist metrics data
+        metrics_dict = add_to_metrics_dict(metrics_dict, avg_loss, dev_accuracy, f1_score, conf_matrix)
+        if metrics_dump_path:
+            pickle.dump(metrics_dict, open(metrics_dump_path, 'wb'))
 
         else:
             logging.info('EPOCH ' + str(epoch))
@@ -188,14 +190,14 @@ def train_on_sent140(vocab_file_path = VOCAB_FILE, param_initialization = None,
     return train(vocab, data, data_batched=True, metrics_dump_path=dump_dir + 'metrics.pickle',
                  param_initialization=param_initialization, param_dump_file_path=dump_dir + 'params.pickle')
 
-def train_on_tweets_collected(vocab_file_path = VOCAB_FILE, num_epochs=NUM_EPOCHS,
+def train_on_tweets_collected(vocab_file_path = VOCAB_FILE, num_epochs=NUM_EPOCHS, data_dir='../Data/tweets_collected/dump/',
                               dump_dir='../Data/tweets_collected/dump/', param_load_file_path=None):
     vocab = load_vocab(vocab_file_path)
 
     # pass data as dict with dump file paths (indicated by data_batched=True)
     data = {}
-    train_dir = dump_dir + 'train/'
-    dev_dir = dump_dir + 'dev/'
+    train_dir = data_dir + 'train/'
+    dev_dir = data_dir + 'dev/'
     data['train'] = [train_dir + file for file in os.listdir(train_dir)]
     data['dev'] = [dev_dir + file for file in os.listdir(dev_dir)]
     return train(vocab, data, data_batched=True, metrics_dump_path=dump_dir + 'metrics.pickle', num_epochs=num_epochs,
@@ -231,19 +233,71 @@ def train_on_sst_and_sanders(num_epochs=30, param_initialization = None):
     return train(vocab, data, metrics_dump_path=dump_dir + 'metrics.pickle', num_epochs=num_epochs,
                  param_initialization=param_initialization, param_dump_file_path=dump_dir + 'params.pickle')
 
-def evaluate_model(vocab_pickle_path, param_load_file_path, validation_data_path):
-    vocab = pickle.load(open(vocab_pickle_path, 'rb'))
+def evaluate_model(vocab_file_path, param_load_file_path, validation_data_path):
+    if 'pickle' in vocab_file_path:
+        vocab = pickle.load(open(vocab_file_path, 'rb'))
+    else:
+        vocab = load_vocab(vocab_file_path)
     num_emb = vocab.size()
-    num_labels = NUM_LABELS
-    max_degree = 2
+    print(num_emb)
 
-    model = get_model(num_emb, num_labels, max_degree)
+    model = get_model(num_emb, NUM_LABELS, max_degree=2)
     model.set_params(pickle_file_path=param_load_file_path)
 
     validation_data = pickle.load(open(validation_data_path, 'rb'))
 
-    accuracy, f1_score, conf_matrix = evaluate_dataset(model, validation_data)
+    if len(validation_data[0]) == 2:
+        accuracy, f1_score, conf_matrix = evaluate_dataset(model, validation_data)
+    elif len(validation_data[0]) == 3: #includes lags
+        accuracy, f1_score, conf_matrix, profit = eval_data_w_lags(model, validation_data)
+        print('profit:', profit)
+
     print('Accuracy: ', accuracy)
     print('F1 Score', f1_score)
     print('Confusion Matrix')
     print(conf_matrix)
+
+def eval_data_w_lags(model, data, print_results=True):
+    # calculates accuracy and f1 metric
+    num_correct = 0
+    i = 0
+    label_array = []
+    pred_array = []
+    profit_array = []
+    conf_matrix = np.zeros([model.output_dim, model.output_dim])
+
+
+    for tree, label, lag in data:
+        pred_y = model.predict(tree)[-1]  # root pred is final row
+        predicted_label = np.argmax(pred_y)
+        profit_array.append((predicted_label-1)*lag)
+        num_correct += (label == predicted_label)
+        conf_matrix[label, predicted_label] += 1
+        label_array.append(label)
+        pred_array.append(predicted_label)
+        i += 1
+
+    accuracy = float(num_correct) / len(data)
+    mean_profit = np.mean(profit_array)
+    if len(set(label_array)) > 2:
+        f1_score = sklearn.metrics.f1_score(label_array, pred_array, average='weighted')
+    else:
+        f1_score = sklearn.metrics.f1_score(label_array, pred_array, pos_label=2, average='binary')
+
+    if print_results:
+        print('Accucacy:', accuracy)
+        print('F1 Score:', f1_score)
+        print('Conf Matrix', conf_matrix)
+        print('Profit', mean_profit)
+    return accuracy, f1_score, conf_matrix, mean_profit
+
+def load_model(vocab_file_path, param_load_file_path, num_labels=3):
+    if 'pickle' in vocab_file_path:
+        vocab = pickle.load(open(vocab_file_path, 'rb'))
+    else:
+        vocab = load_vocab(vocab_file_path)
+    num_emb = vocab.size()
+
+    model = get_model(num_emb, num_labels, max_degree=2)
+    model.set_params(pickle_file_path=param_load_file_path)
+    return model
