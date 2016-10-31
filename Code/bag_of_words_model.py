@@ -172,10 +172,10 @@ def vader_short_term_validation_df(tweets_df_30min_lag, tweets_df_1h_lag):
                          'p_val_1h': p_val_1h_lag}, index=thresholds)
 
 def vader_profit_signif_plot(tweets_df_30min_lag):
-    thresholds = np.arange(0.01, 0.81, 0.01)
+    thresholds = np.arange(0.01, 0.81, 0.1)
     profit_array_30min_lag, n_trades_30min_lag = zip(
         *[predict_profit_from_vader_compound(tweets_df_30min_lag, t, True) for t in thresholds])
-    upper_sign_bound, lower_sign_bound = zip(*[signif_profit_thresholds(n, MU_30MIN_LAG, SD_30MIN_LAG) for n in n_trades_30min_lag])
+    upper_sign_bound, lower_sign_bound = zip(*[sample_profit_dist(tweets_df_30min_lag, n) for n in n_trades_30min_lag])  #zip(*[signif_profit_thresholds(n, MU_30MIN_LAG, SD_30MIN_LAG) for n in n_trades_30min_lag])
     plt.style.use('ggplot')
     plt.plot(thresholds, profit_array_30min_lag, linewidth=2.0)
     plt.plot(thresholds, upper_sign_bound, linewidth=1.0, linestyle='--')
@@ -184,6 +184,17 @@ def vader_profit_signif_plot(tweets_df_30min_lag):
     plt.xlabel('classifiaction threshold t', fontsize=14)
     plt.ylabel('profit per trade', fontsize=14)
     plt.show()
+
+def sample_profit_dist(tweets_df, number_of_trades, n_sim = 50000):
+    print(number_of_trades)
+    profit_array = []
+    for i in range(n_sim):
+        sample = tweets_df['lag'].sample(int(number_of_trades))
+        pos_neg_border = number_of_trades // 2
+        profit = np.mean(sample.iloc[range(pos_neg_border)]) - np.mean(sample.iloc[range(pos_neg_border,number_of_trades-1)])
+        profit_array.append(profit)
+        print(i, profit)
+    return np.percentile(profit_array, 2.5), np.percentile(profit_array, 97.5)
 
 def vader_threshold_profit_plot(tweets_df_30min_lag, tweets_df_1h_lag):
     thresholds = np.arange(0.01, 1.0, 0.01)
@@ -262,15 +273,22 @@ def vader_clustered_regression(tweets_df, cluster_by, ticker = None):
 
     #for table in lm.summary().tables:
     #    print(table.as_latex_tabular())
-    print(lm.summary())
+    return lm.summary()
 
 def add_clusters_to_tweets_df(tweets_df, cluster_by):
-    assert cluster_by in ['day', 'hour', 'month']
+    assert cluster_by in ['day', 'hour', 'month', 'week']
+    #delete cluster column if already exists
+    if 'cluster' in tweets_df.columns:
+        del tweets_df['cluster']
+
     if cluster_by == 'hour':
         clusters = [str(dt.year) + '-' + str(dt.month)+ '-' + str(dt.day) + '-' + str(dt.hour) for dt in tweets_df['created_at']]
         tweets_df['cluster'] = clusters
     if cluster_by == 'day':
         clusters = [str(dt.year) + '-' + str(dt.month)+ '-' + str(dt.day) for dt in tweets_df['created_at']]
+        tweets_df['cluster'] = clusters
+    if cluster_by == 'week':
+        clusters = [str(dt.year) + '-' + str(dt.week) for dt in tweets_df['created_at']]
         tweets_df['cluster'] = clusters
     if cluster_by == 'month':
         clusters = [str(dt.year) + '-' + str(dt.month) for dt in tweets_df['created_at']]
