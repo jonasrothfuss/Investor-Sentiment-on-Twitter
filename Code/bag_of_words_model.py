@@ -262,13 +262,15 @@ def vader_lag_correlation(tweets_w_vader):
     tweets_w_vader = tweets_w_vader[tweets_w_vader['vader_compound'] != 0.0]
     print(stats.pearsonr(tweets_w_vader['lag'], tweets_w_vader['vader_compound']))
 
-def vader_clustered_regression(tweets_df, cluster_by, ticker = None):
-    assert 'lag', 'vader_compound' in tweets_df.columns
+def vader_clustered_regression(tweets_df, cluster_by, ticker = None, lag_col = 'lag'):
+    assert lag_col, 'vader_compound' in tweets_df.columns
     if ticker:
         tweets_df = tweets_df[tweets_df['ticker'] == ticker]
     tweets_df = add_clusters_to_tweets_df(tweets_df, cluster_by)
+    tweets_df = tweets_df[['vader_compound',lag_col,'cluster']]
+    tweets_df = tweets_df[np.isfinite(tweets_df[lag_col])]
     assert 'cluster' in tweets_df.columns
-    lm = smf.ols(formula='lag ~ vader_compound', data=tweets_df).fit(cov_type='cluster',
+    lm = smf.ols(formula=lag_col + ' ~ vader_compound', data=tweets_df).fit(cov_type='cluster',
                             cov_kwds={'groups': tweets_df['cluster']}, use_t=True)
 
     #for table in lm.summary().tables:
