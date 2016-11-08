@@ -25,7 +25,7 @@
 \usepackage{listings}
 \usepackage{longtable}
 \usepackage{multirow}
-
+\usepackage{tabularx}
 
 
 % TR EDIT
@@ -116,7 +116,7 @@
             Chair of Financial Engineering and Derivates\\[0.3cm]
             Prof. Dr. Marliese Uhrig-Homburg}\\[3.5cm]
         {\large Bachelor thesis}\\[1.5cm]
-        {\Huge Investor Sentiment on Twitter and Its \\ \vspace{5mm} Ability to Predict Stock Markets }\\[8cm]
+        {\Huge Investor Sentiment on Twitter and Its \\ \vspace{5mm} Link to the Stock Market}\\[8cm]
     \end{center}
     \renewcommand{\baselinestretch}{1.2}\small\normalsize
     \begin{tabular}{ll}
@@ -124,7 +124,7 @@
         & Ludwig-Wilhelm-Str. 3\\
         & Karlsruhe, Germany\\
         & E-Mail: jonas.rothfuss@gmx.de\\\\
-        \multicolumn{2}{l}{Karlsruhe, October 21st 2016}
+        \multicolumn{2}{l}{Karlsruhe, November 8th 2016}
     \end{tabular}
     \vfill
 \end{titlepage}
@@ -181,47 +181,44 @@ VADER & Valcence Aware Dictionary for Sentiment Reasoning
 \setcounter{page}{1}\renewcommand{\thepage}{\arabic{page}}
 \section{Introduction}
 The question whether stock markets can be predicted to certain degree has always been a heavily discussed issue in academia and business. Early research in this area was was strongly influenced by the Random Walk Theory \citep{Fama1965a, Cootner1964} and the
- Efficient Market Hypothesis (EMH) \citep{Fama1965b, Fama1969}. Core idea of the EMH is that asset prices embody all available information and price changes are driven by new information. The Random Walk Theory states that stock market prices follow a random walk and thus cannot be predicted. Both theories are compatible and imply that it is not possible to consistently generate risk-adjusted profits that are higher than the average market return.
- 
-However, various empirical studies such as \citet{Butler1992, Gallagher2002, Qian2007} show that stock market prices are predictable to a certain degree, thereby questioning the Efficient Market Hypothesis. Also the the EMH can barely explain stock market anomalies that seem to be unjustified given available information. 
+ Efficient Market Hypothesis (EMH) \citep{Fama1965b, Fama1969}. Core idea of the EMH is that asset prices embody all available information and price changes are driven by new information. The Random Walk Theory states that stock market prices follow a random walk and thus cannot be predicted. Both theories are compatible and imply that it is not possible to consistently generate risk-adjusted profits that are higher than the average market return. However, various empirical studies such as \citet{Butler1992, Gallagher2002, Qian2007} show that stock market prices are predictable to a certain degree, thereby questioning the Efficient Market Hypothesis. Also the the EMH can barely explain stock market anomalies that seem to be unjustified given available information. 
 
-What \citeauthor{Keynes1936} referred to as "animal spirits" in 1936, is subject of today's behavioral finance since the "potential role of investor sentiment in financial markets has received considerable attention from economists" \citep{Karabulut2013}. Studies in behavioral economics and psychology showed that not only facts and information, but also emotions and mood influence financial decision-making \citep{Folsom2003, Rick2008}. Therefore, it is reasonable to assume that sentiment as expressed in media like news or online blogs might be related to stock market values.
+What \citeauthor{Keynes1936} referred to as "animal spirits" in 1936, is subject of today's behavioral finance since the "potential role of investor sentiment in financial markets has received considerable attention from economists" \citep{Karabulut2013}. Studies in behavioral economics and psychology showed that not only facts and information, but also emotions and mood influence financial decision-making \citep{Folsom2003, Rick2008}. Therefore, it is reasonable to assume that sentiment as expressed in media like news or online blogs might be related to stock prices. 
 
-"Investor sentiment, defined broadly, is a belief about future cash flows and investment risks that is not justified by the facts at hand" \citep{Baker2007}. A vast body of empirical literature examines the effects of investor sentiment on financial markets. Though addressing the same question, previous work significantly  differs in the way investor sentiment is measured. Ideas, where to extract sentiment from, range from basic macroeconomic news \citep{Cutler1989}, over Wall Street Journal columns \citep{Tetlock2007} and online message boards \citep{Antweiler2004} to more exotic ideas such as the ambient noise level in a futures pit \citep{Coval2001}. 
+I pose the question how investor sentiment, expressed in Tweets that are specifically related to stocks, interacts with stock markets. Using two million Tweets, I analyze whether relevant sentiment can be extracted and examine its link to stock returns. Specifically, it is investigated if the sentiment of equity Tweets reflects past stock returns or predicts stock price movements in the future. 
 
-More recent work examines whether sentiment of social media content (i.e. Twitter and Facebook) is able to predict the stock market \citep{Bollen2011, Karabulut2013}. Both \citeauthor{Karabulut2013} and \citeauthor{Bollen2011} find that certain measures of public mood, extracted from Facebook and Twitter repectively, are correlated with changes in the DJIA.
+In a first approach, sentiment is extracted with a lexicon-based sentiment analysis method (i.e. VADER), resulting in a sentiment score for each Tweet. OLS regression is then used to investigate how these sentiment scores interact with past and future stock returns in a time range of one hour. 
+%
+I find stock returns preceding a Tweet to be positively correlated with its sentiment, whereas negative correlation is found for stock-returns succeeding a Tweet by approximately 30 minutes. Results suggest that the sentiment of equity Tweets follows investor sentiment with a time delay, reflecting stock returns in the past and predicting a reversion of the previous stock price movement in the near future.
+%
+In a further step, a short-term trading strategy based on the sentiment scores is implemented and evaluated. I find that betting on a stock price reversion in response to strong sentiment polarity in equity Tweets yields significantly higher returns than a naive randomized trading strategy.
 
-While these studies are based on general mood, measured on the whole corpus of social media content, I pose the question whether investor sentiment, expressed in Tweets which are specifically related to stocks, can forecast the corresponding stock prices.
+With regard to stock market movements on a daily basis, I combine the sentiment scores of all Tweets throughout a day to a daily sentiment value. A Granger causality analysis is then used to investigate the hypothesis that investor sentiment, as measured by VADER, is predictive of changes in stock market closing values. Regarding this, no evidence for an interaction of Tweet sentiment and daily stock returns is found.
 
-Using two million Tweets, I investigate if relevant sentiment can be extracted and assess its ability to predict stock price movements. Therefore, two different time fames are considered - short-term stock price changes in a 30 min to 1 hour range and stock market movements on a daily basis. 
+Since machine learning methods were shown to outperform simple lexicon approaches in many applications of sentiment analysis, I examine the ability of machine learning models to predict stock markets based on the collected Tweets. First, a base-line sentiment analysis model with word occurrence counts as features and common machine learning classifiers is applied. Finally, I train and validate a state-of-the-art deep learning model for sentiment classification, aiming to predict stock markets based on the Tweets. Against expectations, all machine learning approaches that were implemented and tested perform significantly worse than VADER in terms of stock return prediction based on equity Tweets. Results indicate that machine learning methods can hardly learn meaningful sentiment features and patterns due to the fuzziness of the underlying stock market data.
 
-In a first approach, sentiment is extracted with a lexicon-based sentiment analysis method (i.e. VADER), resulting in a sentiment score for each Tweet. Based on these scores a potential short-term trading strategy that induces a long position (buy) in response to high sentiment scores and a short position (sell) in response to particularly low/negative sentiment scores is evaluated. With regard to stock market movements on a daily basis, I combine the sentiment scores of all Tweets throughout a day to a daily sentiment value. A Granger causality analysis is then used to investigate the hypothesis that investor sentiment, as measured by VADER, is predictive of changes in stock market closing values.
+The theoretical foundation for the impact of investor sentiment on stock markets was introduced by \citet{DeLong1990}.
+In an effort to explain wild stock market movements that seem to be unjustified by fundamentals\footcite{Tetlock2007}, \citeauthor{DeLong1990} propose a theoretical model attempting to explain why stock prices often diverge significantly from fundamental values. Core assumption of their theory is the existence of two types of traders - irrational noise traders who have random beliefs about the value of a certain stock and rational arbitrageurs. Furthermore, both investor types are assumed to be risk averse. They show the existence of an equilibrium in which stock prices are influenced by the noise traders' random beliefs. For instance, if investor sentiment is negative, meaning that the noise traders's averaged beliefs are more pessimistic than the arbitrageurs' rational belief, noise traders sell stocks to arbitrageurs and thereby temporarily depress stock returns. As the stock price significantly drops under its fundamental value, rational arbitrageurs increasingly start to buy the respective stocks, inducing a reversion back to the fundamental value. However, the volatility of noise traders' beliefs creates additional risk that deters arbitrageurs from aggressively betting against them, thus impeding an efficient price reversion.
 
-Since machine learning methods were shown to outperform simple lexicon approaches in many applications of sentiment analysis, I examine the ability of machine learning models to predict stock markets based on the collected Tweets. First, a base-line sentiment analysis model with word occurrence counts as features and common machine learning classifiers is applied. Finally, I train and validate a state-of-the-art deep learning model for sentiment classification, aiming to predict stock markets based on equity Tweets.
+There is a growing number of empirical studies that find a linkage between investor sentiment and financial markets. Beside indirect, market based proxies for investor sentiment such as closed-end fund discounts, dividend premiums and number of IPOs \citep{Lee1991, Baker2006}, there is an increasing number of studies in empirical finance that measure investor sentiment in texts (e.g. news, blogs), using techniques known from natural language processing. 
 
-\section{Related Work}
-In an effort to explain wild stock market movements that seem to be unjustified by fundamentals\footcite{Tetlock2007}, \citet{DeLong1990} propose a theoretical model attempting to explain why stock prices often diverge significantly from fundamental values. Core assumption of their theory is the existence of two types of traders - irrational noise traders who have random beliefs about the value of a certain stock and rational arbitrageurs. Furthermore, both investor types are assumed to be risk averse. They show the existence of an equilibrium in which stock prices are influenced by the noise traders' random beliefs. For instance, if investor sentiment is negative, meaning that the noise traders's averaged beliefs are more pessimistic than the arbitrageurs' rational belief, noise traders sell stocks to arbitrageurs and thereby temporarily depress stock returns.
+\citet{Antweiler2004} attempt to measure investor sentiment based on internet stock message boards by extracting whether the messages tend to contain a "buy", "sell" or "hold" trading recommendation. Although they find evidence that the stock messages help predict market volatility, they do not find statistically significant results that bullish or pessimistic messages can forecast stock returns.
+\citet{Tetlock2007, Garcia2012} conducted studies with regard to investor sentiment based on columns of the Wall Street Journal and New York Times, respectively. Both find that pessimism, indicated by predominantly negative words in the columns, predicts downward pressure on the Dow Jones Industrial Average (DJIA). Important to note is the fact that statistically significant predictability of stock returns using news paper content could just be shown for downward trends, not for positive stock market trends.
 
-Meanwhile the fact that investor sentiment influences stock prices is generally accepted. However, the question how to empirically measure investor sentiment still poses challenges and is frequently addressed in research.
+Recent work focuses on creating a measure of public mood based on content in social media and relating it to stock market indices. \citet{Bollen2011} analyze the text of daily Twitter feeds by measuring the overall sentiment polarity as well as 6 dimensions of mood. First and foremost, they find that especially the mood dimension "Calm" is Granger-causative to DJIA values. While the Twitter mood dimension "Happy" does not significantly contribute to stock market predictions, \citet{Karabulut2013} shows that Facebook's Gross National Happiness indicator is able to forecast daily US stock market returns. Both studies use public mood extracted from the entire corpus of social media (i.e. Twitter and Facebook) as proxy for investor sentiment on a daily basis. Results are in accordance with \citet{Hirshleifer2001} who find that sunny weather, positively affecting public mood, is correlated with daily stock returns. 
 
-"Traditionally, the sentiment measures employed in the literature are either indirect (market-based) measures or direct (survey-based) measures" \citep{Karabulut2013}. An example of the first is \citet{Lee1991}. They use closed-end fund discounts (CEFD) as proxy for investor sentiment and demonstrate that decreases in CEFD are correlated with returns of stocks which are assumed to be predominantly held by noise traders. However, in a later study by \citet{Qui2004}  the use of CEFD as sentiment proxy is questioned. \citet{Baker2006} incorporate further market-based measures such as dividend premiums, number of IPOs, average first-day IPO returns and NYSE turnover into a combined indicator of sentiment.
+However, how social media content that specifically refers to financial markets is related to stock price changes has not yet been addressed in the literature. In general, the majority of empirical work in this field analyzes the relationship of investor sentiment and stock returns on a daily basis or considers even longer timespans. Shorter time frames on a sub-day level have only received little attention in financial literature so far. To my knowledge, this is the first study that considers timespans of less than one hour for interaction of investor sentiment in media and stock markets. The results obtained for the analysis of short-term relationships between Tweet sentiment and stock prices tell a consistent story and are in accordance with the noise trader theory proposed by \citet{DeLong1990}.
 
-Other approaches are based on the extraction of features from texts (e.g. news, blogs), known as sentiment analysis from natural language processing. \citet{Antweiler2004} attempt to measure investor sentiment based on internet stock message boards by extracting whether the messages tend to contain a "buy", "sell" or "hold" trading recommendation. Although they find evidence that the stock messages help predict market volatility, they do not find statistically significant results that bullish or pessimistic messages can forecast stock returns.
-
-\citet{Tetlock2007, Garcia2012} conducted studies with regard to investor sentiment based on columns of the Wall Street Journal and New York Times, respectively. Both find that pessimism, indicated by predominantly negative words in the columns, predicts downward pressure on on the DJIA. Important to note is the fact that statistically significant predictability of stock returns using news content could just be shown for downward trends, not for positive stock market trends.
-
-Recent work focuses on creating a measure of public mood based on content in social media and relating it to stock market indices. \citet{Bollen2011} analyze the text of daily Twitter feeds by measuring the overall sentiment polarity as well as 6 dimensions of mood. First and foremost, they find that especially the mood dimension "Calm" is Granger-causative to DJIA values. While the Twitter mood dimension "Happy" does not significantly contribute to stock market predictions, \citet{Karabulut2013} shows that Facebook's Gross National Happiness indicator is able to forecast daily US stock market returns.
+Since I use modern techniques of natural language processing and machine leaning some readers with background in finance might not be acquainted with, Section \ref{sent_analysis} provides an outline of common approaches and recent developments in sentiment analysis. Section \ref{data} reports how the Tweets were collected, preprocessed and labelled. In Section \ref{lexion-approach}, I describe the lexicon-based  approach that is used to extract sentiment from the Tweets and explain the analytical steps, performed to investigate the relationship to short-term stock movement and daily stock returns. Section \ref{ml_methos} gives an introduction to the machine learning models that are applied, followed by a comprehensive assessment of the models' ability to predict stock market returns. Finally, I conclude in Section \ref{conclusion} by discussing the results and suggesting future research on the influence of investor sentiment in stock markets.
 
 
-\section{Sentiment Analysis}
+\section{Sentiment Analysis \label{sent_analysis}}
 Sentiment Analysis is considered as one of the major task of Natural Language Processing (NLP). Whilst the problem formulation in other fields of NLP such as part-of-speech tagging is relatively clear, sentiment analysis is a broader category of tasks consisting of multiple problem dimension. 
 
 One basic problem dimension with respect to sentiment is the analysis of polarity: "Given an opinionated piece of text, wherein it is assumed that the overall opinion in it is about one single issue or item, classify the opinion as falling under one of two opposing sentiment polarities, or locate its position on the continuum between these two polarities" \citep{Pang.2008}. Most common is the so called sentiment polarity classification which is a binary classification that distinguishes between "positive" and "negative" sentiment. Early research conducted in this area mainly focuses on pieces of text that clearly express the author's subjective opinion on a specific entity. Typical problem sets with regard to sentiment polarity are reviews. One of the most discussed tasks in research is the classification of movie review sentiment as initially addressed in \citet{Pang2002} and \citet{Turney2002}.
-
 Aside from binary polarity classification, there has been research capturing sentiment on a multi-way scale \citep{Snyder2007a} and fine-grained sentiment classification with three or more classes (\cite{Pang2005}; \cite{Socher2013}).
 
-Another problem dimension of sentiment analysis is to distinguish between subjective and objective text. Whether the author only states facts or expresses his/her subjective opinion within a piece of text interferes with sentiment polarity detection. Subjective texts tend to contain more attributive verbs and adjectives (e.g. to adore, to hate, terrible, fantastic, good, bad) which indicate the underlying sentiment. Thus, deciding on sentiment polarity given a subjective statement is usually easier in comparison to objective text. \citet{Pang2004} even showed that removing objective passages and sentences from a text when determining sentiment polarity can improve the performance.
-
+Another problem dimension of sentiment analysis is to distinguish between subjective and objective text. Whether the author only states facts or expresses his/her subjective opinion within a piece of text interferes with sentiment polarity detection. Subjective texts tend to contain more attributive verbs and adjectives (e.g. to adore, to hate, terrible, fantastic, good, bad) which indicate the underlying sentiment. Thus, deciding on sentiment polarity given a subjective statement is usually easier in comparison to objective text. \citet{Pang2004} even showed that removing objective passages and sentences from a text when determining its sentiment polarity can improve the performance.
 However, text data for sentiment classification does not always have to be strongly opinionated. News can be considered as good or bad without being subjective \citep{Pang.2008}. By just mirroring facts like "IPhone sales increased by 25\% in the first quarter" a piece of news can be positive or negative for an underlying entity such as the company or the respective stock. Hence, classifying equity news according to its impact on stock prices has been considered sentiment classification in the literature as well \citep{Koppel2006}.
 
 Sentiment analysis varies in its scope. Tasks within the domain range from document level, such as deciding on the positivity/negativity of web reviews consisting of multiple paragraphs or sentences to phrase level sentiment, e.g. short comments in social media. Due to the variety in scope, different sentiment related tasks might require very different approaches, especially with regard to the features used for the analysis. According to \citet{Asghar2014} there are three types of morphological features: semantic,  syntactic and lexico structural. Semantic features are based on contextual information or semantic orientation. Typical unsupervised methods which are used to determine the semantic orientation of words and phrases are Latent Semantic Analysis (LSA) and Point Wise Mutual Information (PMI) (\cite{Turney2002}; \cite{Turney2003}). Syntax type features use NLP tools such as Part of Speech Tagging (POS), n-grams and word dependencies. Lexico structural features provide statistical information about a text such as word distribution and special symbol frequencies.
@@ -229,12 +226,12 @@ Sentiment analysis varies in its scope. Tasks within the domain range from docum
 
 Traditional sentiment analysis approaches use so called Bag-of-Word models where text is represented as multiset of its words. As these models are indifferent to word order, syntactic features and semantic compositionality are neglected entirely. Often Bag-of-Word models are used in combination with sentiment lexicons that list relevant words with their respective sentiment polarity.
 
-While sentiment analysis, solely based on semantic orientation of words and their frequency within a text, works well for longer documents, short texts usually require more sophisticated approaches that combine multiple types of features. An explanation is that attributive verbs and adjectives, as well a nouns that contain information on sentiment polarity occur in a certain frequency within a text. Thus, longer pieces of text usually contain more such words and phrases. When accumulating the information on semantic orientation throughout a longer document, the sentiment polarity can be predicted relatively accurate (e.g. 74\% accuracy on reviews in \citet{Turney2002}). However, short pieces of text such as a single sentences do not contain enough words that are rich of information on sentiment polarity when viewed isolated. Instead, it is necessary to capture the interaction of semantic as well as syntactical features; in particular, how words and phrases are arranged within an expression and semantically interact.\\
+While sentiment analysis, solely based on semantic orientation of words and their frequency within a text, works well for longer documents, short texts usually require more sophisticated approaches that combine multiple types of features. An explanation is that attributive verbs and adjectives, as well a nouns that contain information on sentiment polarity occur in a certain frequency within a text. Thus, longer pieces of text usually contain more such words and phrases. When accumulating the information on semantic orientation throughout a longer document, the sentiment polarity can be predicted relatively accurate (e.g. 74\% accuracy on reviews in \citet{Turney2002}). However, short pieces of text such as a single sentences do not contain enough words that are rich of information on sentiment polarity when viewed isolated. Instead, it is necessary to capture the interaction of semantic as well as syntactical features; in particular, how words and phrases are arranged within an expression and semantically interact.
 
-A challenge in NLP is to craft features that represent the characteristics of natural language (i.e. syntax and semantic) and at the same time are convenient to process and analyse mathematically. An approach that gained huge popularity in NLP are vector space models, initially introduced by \citet{Salton1975}. Vector space models represent words as vectors in a continuous space (i.e. $\mathbb{R}^n$). Semantically related words are located in the same region of the vector space. Although a multitude of methods to generate semantic vector spaces have been introduced and utilized, they all "depend in some way or another on the Distributional Hypothesis, which states that words that appear in the same contexts share semantic meaning". A big advantage of semantic vector spaces when compared with other features is the mathematical convenience. Text, represented as numerical vector can be directly used as input for many machine learning methods such as deep learning. 
+A challenge in NLP is to craft features that represent the characteristics of natural language (i.e. syntax and semantic) and at the same time are convenient to process and analyse mathematically. An approach that gained huge popularity in NLP are vector space models, initially introduced by \citet{Salton1975}. Vector space models represent words as vectors in a continuous space (i.e. $\mathbb{R}^n$). Semantically related words are located in the same region of the vector space. Although a multitude of methods to generate semantic vector spaces have been introduced and utilized, they all "depend in some way or another on the Distributional Hypothesis, which states that words that appear in the same contexts share semantic meaning"\footnote{https://www.tensorflow.org/versions/r0.11/tutorials/word2vec/index.html; Aug 2016}. A big advantage of semantic vector spaces when compared with other features is the mathematical convenience. Text, represented as numerical vector can be directly used as input for many machine learning methods such as deep learning. 
 
 
-\section{Data}
+\section{Data \label{data}}
 \subsection{Retrieval}
 
 
@@ -254,10 +251,10 @@ Will Disney Earnings Crash \$DIS Stock Again? https://t.co/LwL3wiecdb \\ \hline
 I don't even like/use \#windows, but I like the stock \$msft https://t.co/0PMn5rfZwG \\ \hline
 
 \end{tabular}
-\caption{Five examples selected from the stock related Tweets that were collected between October 2015 and September 2016 \label{table:weet_examples}}
+\caption[Examples of the Collected Tweets]{Five examples selected from the stock related Tweets that were collected between October 2015 and September 2016 \label{table:weet_examples}}
 \end{table}
 
-Over a time period of 10 month (Oct 21, 2015 to Aug 23, 2016) 2,011,944 Tweets were collected via the TwitterAPI. All of the Tweets are written in English language and contain at least one ticker symbol of the 30 firms in the Dow Jones Industrial Average (e.g. \$AAPL). Table \ref{table:weet_examples} shows five examples from the more than 2 million Tweet that were gathered. 45\% of these Tweets are so called Re-Tweets thus not providing any new text or content. More than 85\% of tweets only contain one stock ticker. However, the amount of tweets referring a specific stock varies significantly. While  more than half of the tweets refer to Apple of Microsoft, firms like United Technology Corporation or United Health Group get only little attention on Twitter. Figure \ref{fig:tweet_percentages} illustrates how the stock mentions throughout the collected tweets are distributed among the firms.
+Over a time period of 10 month (Oct 21, 2015 to Aug 23, 2016) 2,011,944 Tweets were collected via the TwitterAPI. All of the Tweets are written in English language and contain at least one ticker symbol of the 30 firms in the Dow Jones Industrial Average (e.g. \$AAPL). Table \ref{table:weet_examples} shows five examples from the more than 2 million Tweets that were gathered. 45\% of these Tweets are so called Re-Tweets thus not providing any new text or content. More than 85\% of tweets only contain one stock ticker. However, the amount of tweets referring a specific stock varies significantly. While  more than half of the tweets refer to Apple of Microsoft, firms like United Technology Corporation or United Health Group get only little attention on Twitter. Figure \ref{fig:tweet_percentages} illustrates how the stock mentions throughout the collected tweets are distributed among the most popular firms.
 
 In order to validate models and trading strategies, the retrieved data is split into two parts. The partion of Tweets that were posted between Oct 21, 2015 and Jul 10, 2016 is used for analysis and selection of models. To avoid overfitting and correctly assess the performance of trading strategies that were developed based on the first part of data, all Tweets from Jul 11 to Aug 23, 2016 are put aside and solely used for validation.
 
@@ -265,12 +262,11 @@ In order to validate models and trading strategies, the retrieved data is split 
 \captionsetup{justification=centering}
 \centering
 \includegraphics[width=0.7\textwidth]{graphics/tweet_percentages.pdf}
-\caption{Percentage of collected tweets that contain a respective stock ticker. Displayed are only 8 of 30 tickers with the highest occurance within the tweets. \label{fig:tweet_percentages}}
+\caption[Stock Ticker Occurance Histogram]{Percentage of collected tweets that contain a respective stock ticker. Displayed are only 8 of 30 tickers with the highest occurance within the tweets. \label{fig:tweet_percentages}}
 \end{figure}
 
 \subsection{Preprocessing and cleaning}
 Before sentiment analysis or other NLP tasks are performed it is important to preprocess and clean the text data. First, this includes removing data that is duplicate, corrupted or not relevant to the task. Thus, I remove all direct re-tweets as they a are duplicates of tweets that have already been posted.
-
 Second, transforming and cleaning the text to unify the format and reduce unnecessary variance within the text can significantly improve the performance of NLP procedures. Main goal is to keep the required vocabulary as small as possible without compromising too much information. With regard to this, I perform following steps:
 
 \begin{itemize}
@@ -285,29 +281,32 @@ Second, transforming and cleaning the text to unify the format and reduce unnece
 
 
 \subsection{Labelling \label{labelling}}
-For tweets that were posted within the New York Stock Exchange trading hours (14:30 UTC to 21:00 UTC) I calculate 30 minutes and 1 hour stock price response $r$
-$$
-r_{30\text{min}} = \frac{p(t_{post} + 30~\text{min})}{p(t_{post})} - 1
-$$
+For tweets that were posted within the New York Stock Exchange trading hours (14:30 UTC to 21:00 UTC) I calculate different short-term stock price returns $r_{\Delta t}$
+\begin{equation}
+r_{\Delta t} = \frac{p(t_{Tweet} + \Delta t)}{p(t_{Tweet})} - 1
+\end{equation}
 
-$$
-r_{1 \text{h}} = \frac{p(t_{post} + 60~\text{min})}{p(t_{post})} - 1
-$$
+where $t_{Tweet}$ denotes the time at which the tweet was posted,  $\Delta t$ the corresponding time lag and $p(t)$ the corresponding stock price at time $t$. Specifically I consider 1, 5, 10, 20, 30, 40 and 60 minute time lags. Due to computational burdens of machine learning I will put the main focus on 30 minute and 1 hour lags. 
+The stock price responses are approximately normal distributed (Figure \ref{fig:lags_hist}) with $\mu \approx 0$. As one would expect the 1 hour stock price responses have a higher variance than the 30 min price movements.
+ 
 
-where $t_{post}$ denotes the time at which the tweet was posted and $p(t)$ the corresponding stock price at time $t$.
+In section \ref{vader_short_term} stock returns, preceding a Tweet, are considered as well. In case the time difference $\Delta t$ denotes a backward looking timespan (e.g. - 30 min), returns are defined as follows:
+\begin{equation}
+r_{- \Delta t} = \frac{p(t_{Tweet})}{p(t_{Tweet} - \Delta t)} - 1
+\end{equation}
 
-The stock price responses are approximately normal distributed (Figure \ref{fig:lags_hist}) with $\mu \approx 0$. As one would expect the 1 hour stock price responses have a higher variance than the 30 min price movements.\\
 
 In order to perform sentiment classification with machine learning methods it is necessary create discrete labels for the tweets. Correspondent to the stock price responses $r_{30\text{min}}$ respectively $r_{1 \text{h}}$, I assign one of the labels "negative", "neutral" and "positive" each. Tweets with a stock price response ranging among the 25\% most negative price responses are assigned the label "negative", tweets with $r$ among the 25\% most positive price responses "positive" and the remaining tweets "neutral". The label assignment approach can be formally expressed through a mathematical map that utilizes the 25th and 75th percentile of the price responses to distinguish among the three sentiment labels:
-
-$$ 
+%
+\begin{equation}
  l(r) =
    \begin{cases}
      \text{"positive"} & \text{if } r \geq p_{75}\\
      \text{"neutral"}  & \text{if }  p_{25} < r < p_{75} \\
      \text{"negative"}  & \text{if } r \leq p_{25}
    \end{cases}
-$$
+\end{equation}
+Since these labels were created based on changes of the associated stock price within the next 30 min / 1 hour, the labels do not necessarily reflect text sentiment as known from natural language processing. 
 
 
 
@@ -324,9 +323,8 @@ $$
         \includegraphics[width=1\textwidth]{graphics/1h_lag_dist.pdf}
         \caption{1 hour lag}
    \end{subfigure}
-\caption{Distribution of relative stock price response corresponding to a tweet a) 30 minutes b) 1 hour after the tweet has been posted and normal distribution with estimated $\mu$ and $\sigma$  \label{fig:lags_hist}}
+\caption[Empirical Distribution of Short-Term Stock Returns]{Distribution of relative stock price response corresponding to a tweet a) 30 minutes b) 1 hour after the tweet has been posted and normal distribution (dashed line) with sample-estimated $\mu$ and $\sigma$  \label{fig:lags_hist}}
 \end{figure}
-
 
 
 \section{A Lexicon Based Approach - Valence Aware Dictionary for Sentiment Reasoning (VADER) \label{lexion-approach}}
@@ -334,49 +332,146 @@ Many state-of-practice sentiment analysis benchmarks rely on sentiment lexica to
 
 Typical state-of-practice benchmarks in the domain of lexicon based sentiment analysis are the General Inquirer \citep{Stone1966}, Linguistic Inquiry and Word Count (LIWC) \citep{Pennebaker2001, Pennebaker2007}, as well as SentiWordNet (SWN) \citep{Baccianella2010}.
 
-As traditional lexicon based sentiment models like the General Inquirer or LIWC were developed with focus on longer text documents, the nature of microblog content "poses serious challenges to practical applications of sentiment analysis. Some of these challenges stem from the [...] contextual sparseness resulting from shortness of the text and a tendency to use abbreviated language conventions to express sentiments" \citep{Hutto2014}
+As traditional lexicon based sentiment models like the General Inquirer or LIWC were developed with focus on longer text documents, the nature of microblog content "poses serious challenges to practical applications of sentiment analysis. Some of these challenges stem from the [...] contextual sparseness resulting from shortness of the text and a tendency to use abbreviated language conventions to express sentiments" \citep{Hutto2014}.
+Addressing this issue, \citeauthor{Hutto2014} presented a rule-based sentiment model with underlying dictionary called VADER. They created a lexicon attuned for miroblog texts by aggregating lexical features from well-established, existing sentiment lexica and supplementing additional lexical features that are frequently used in social media (e.g. emoticons, acronyms etc.). In addition, they formulated five simple rules that "embody grammatical and syntactic conventions that humans use when expressing or emphasizing sentiment intensity" (ibid.).
 
-Addressing this issue, \citet{Hutto2014} presented a rule-based sentiment model with underlying dictionary called VADER. They created a lexicon attuned for miroblog texts by aggregating lexical features from well-established, existing sentiment lexica and supplementing additional lexical features that are frequently used in social media (e.g. emoticons, acronyms etc.). In addition, they formulated five simple rules that "embody grammatical and syntactic conventions that humans use when expressing or emphasizing sentiment intensity" \citep{Hutto2014}. 
+When validating the 3-class classification performance of VADER in four distinct domain contexts (Social Media, Product Reviews, Movie Reviews and NY Times Editorials), it dominates all other established sentiment lexicon baselines by F1 score\footnote{Measure of a classifier's accuracy that is insensitive to imbalanced classes; for detailed explanation see section \ref{baseline_ml}}. Especially when classifying Tweets, with a F1 score of 0.96 VADER significantly outperforms other lexicon based models (F1 score $\leq$ 0.77).
 
-When validation the 3-class classification performance of VADER in four distinct domain contexts (Social Media, Product Reviews, Movie Reviews and NY Times Editorials), it dominates all other established sentiment lexicon baselines by F1 score. Especially when classifying Tweets, with a F1 score of 0.96 VADER significantly outperforms other lexicon based models (F1 score $\leq$ 0.77).
+\newpage
+\subsection{VADER Sentiment and Its Linkage to Short-Term Stock Returns \label{vader_short_term}}
 
-\subsection{Forecasting Short Term Stock Price Movements with VADER \label{vader_short_term}}
+As VADER appears to be the most suited lexicon based sentiment analysis tool for this purpose, I use VADER to generate a sentiment scores for each of the collected Tweets, attempting to predict the corresponding stock price responses. For generating VADER sentiment scores, the following steps are performed: First, the Tweets are split up into words and tokens. Then each word/token is looked up in the sentiment lexicon and if listed there, annotated according to its sentiment polarity. Negative, positive and neutral sentiment annotations are each aggregated into an intensity score from 0 to 1. Thereby, linguistic rules accounting for negation and sentiment intensity are incorporated. Then the three intensity scores are combined to a compound sentiment score ranging from -1 to 1. A negative score indicates negative sentiment polarity, whereas positive sentiment is suggested by positives scores.
 
-As VADER appears to be the most suited lexicon based sentiment analysis tool for this purpose, I use VADER to generate a sentiment scores for each of the collected Tweets, attempting to predict the corresponding stock price responses. Negative, positive and neutral sentiment features are each aggregated into an intensity score from 0 to 1. Then the three intensity scores can be combined to compound sentiment score ranging from -1 to 1. A negative score indicates negative sentiment polarity, whereas positive sentiment is suggested by positives scores.
+To examine how VADER sentiment scores $s_i$ are related to short-term stock price returns $r_i$ within 1 hour time range after a Tweet $i$ is published, I perform a linear regression with the following model:
+\begin{equation}
+r_i = \alpha + \beta * s_i + \epsilon_i \label{OLS_formula}
+\end{equation} 
+Classical linear regression assumes that the error terms $\epsilon_i$ are independent and identical distributed. However, I find that the stock returns $r_i$ are (auto)correlated, thus strongly violating this assumption. To correctly assess the predictability of stock market returns through Twitter sentiment, a time series approach would be preferable. Unfortunately the time steps between the posting of Tweets are unevenly spaced, thus making analysis with time series approaches like ARIMA, or performing Granger-Causality very difficult. 
+In order to account for dependence of stock returns in the setting of linear regression, the Tweets and corresponding stock responses are clustered by day. Within the daily clusters, correlation of the error terms $\epsilon_i$ is allowed, whereas independence among the daily clusters is assumed.
 
-To examine if the calculated VADER sentiment scores can forecast short-term stock price movements I correlate the compound sentiment score with the corresponding 30 minute and 1 hour stock price response (see section \ref{labelling}). Sentiment scores with value 0.0 and the corresponding stock response are excluded from the computation of the correlation coefficient since Tweets with neutral sentiment do not induce a trade. For 30 minute lags the Pearson correlation is significantly negative ($\rho_{30min}=-0.01352$, p-val $= 2.97 * 10^{-5}$.). In contrast, the hypothesis that 1 hour stock responses are not correlated with the sentiment scores cannot be rejected given $\alpha = 0.05$ ($\rho_{1h}=-0.0019$; p-val $=0.5673$).
+\begin{table}
+\centering
+\captionsetup{justification=centering}
+\begin{tabularx}{0.76\textwidth}{c|l|cccc}
+ regressand & parameter & coef & std error & t & P$>|t|$\\ \hline
 
-To further validate the findings, I build a simple hand-crafted classifier that assigns each Tweet a sentiment label 'positive' when its compound sentiment score exceeds the positive threshold $t$ and 'negative' when the score is negative and smaller than $-t$. Tweets with a score within the threshold boundaries $[-t,t]$ are classified as 'neutral'. The classifier can formulated mathematically as follows:
+\multirow{2}{*}{$r_{1min}$} & Intercept &       0.0355  &        0.036     &     0.997  &         0.320 \\
+& VADER score &      -0.0396  &        0.070     &    -0.564  &         0.573      \\ \hline
 
-$$ 
+\multirow{2}{*}{$r_{5min}$} & Intercept & 0.0138  &        0.119     &     0.116  &         0.908    \\
+& VADER score &      -0.1138  &        0.149     &    -0.766  &         0.445         \\ \hline
+
+\multirow{2}{*}{$r_{10min}$} & Intercept &      -0.0076  &        0.211     &    -0.036  &         0.971        \\
+& VADER score &      -0.1312  &        0.213     &    -0.616  &         0.539          \\ \hline
+
+\multirow{2}{*}{$r_{20min}$} & Intercept &       0.0821  &        0.383     &     0.214  &         0.831        \\
+& VADER score &      -0.6013  &        0.311     &    -1.931  &         0.055          \\ \hline
+
+\multirow{2}{*}{$r_{30min}$} & Intercept    &      -0.0230  &        0.566     &    -0.041  &         0.968  \\
+& VADER score &      -1.0613  &        0.434     &    -2.444  &        \textbf{0.016}     \\ \hline
+
+\multirow{2}{*}{$r_{40min}$} & Intercept &      -0.0568  &        0.763     &    -0.074  &         0.941\\
+& VADER score &      -0.8941  &        0.476     &    -1.877  &         0.062   \\ \hline
+
+\multirow{2}{*}{$r_{1h}$} & Intercept   &  -0.0967  &        1.069     &    -0.091  &         0.928  \\
+& VADER score &   -0.3257  &        0.570     &    -0.572  &         0.568    \\ \hline
+
+\end{tabularx}
+\caption[Regression Summary Short-Term Stock Returns and Tweet Sentiment]{OLS regression summary - Predicting short-term stock price responses with VADER sentiment scores: This table shows the OLS estimates of the coefficients $a$ and $\beta$ in equation \ref{OLS_formula} fitted on ca. 220,00 Tweets and corresponding Dow Jones stock data from Oct 2015 to Aug 2016 with daily error clusters. Regressand: stock return $r_i$ (in basepoints) after a Tweet $i$ is posted. Regressor: VADER compound sentiment score $s_i$ of Tweet $i$ \label{vader_short_term_30min}}
+\end{table}
+
+Surprisingly, OLS estimates of parameter $\beta$ are negative, indicating a negative relationship between sentiment scores and short-term stock returns. I conduct a t-test ($H_0$: $\beta=0$) to determine whether there is a significant linear relationship between Tweet sentiment and stock market. Table \ref{vader_short_term_30min} holds the OLS estimates and t-test results.
+
+Given a confidence level of 95\%, the hypothesis that there is no linear relationship between VADER sentiment scores and stock market returns can be rejected for 30 min lags (p-value = 0.016). This observation is reinforced by the fact that 20 min and 40 min stock returns also show the same tendency (p-val: 0.055 and 0.062). In contrast, a p-value of 0.568 for 1 hour stock returns suggests that the effect observed for 30 minute lags becomes increasingly distorted by new information and general volatility of stock prices as more time passes by.
+
+When considering the hypothesis that the measured sentiment reflects "noise traders’ beliefs relative to Bayesian beliefs" \citep{Tetlock2007} of rational arbitrageurs as introduced in the theoretical work of \citet{DeLong1990}, it is crucial to take the temporal flow of causality into account. Either the measured VADER scores forecast investor sentiment or they reflect past investor sentiment. If the former would be the case, one would expect to measure a positive correlation for stock-returns in the future. However, the findings in Table \ref{vader_short_term_30min}, i.e. negative correlation, indicate the opposite. In case the measured Tweet sentiment follows investor sentiment with a time-delay, one would expect a positive correlation of sentiment scores and stock returns in the near past. To further analyse the latter hypothesis, I perform an OLS regression with daily error clusters for stock returns within a 1 hour range before a respective Tweet is published. Figure \ref{vader_short_term_backw} lists the OLS regression results for past stock returns. Indeed, stock returns that precede the publishing time of a Tweet by five minutes or more show a significantly positive correlation with its Vader score.
+
+\begin{table}
+\centering
+\captionsetup{justification=centering}
+\begin{tabularx}{0.76\textwidth}{c|l|cccc}
+ regressand & parameter & coef & std error & t & P$>|t|$\\ \hline
+
+\multirow{2}{*}{$r_{-1min}$} & Intercept &  0.0355  &        0.036     &     0.997  &         0.320        \\
+& VADER score &      -0.0396  &        0.070     &    -0.564  &         0.573          \\ \hline
+
+\multirow{2}{*}{$r_{-5min}$} & Intercept &      0.0567  &        0.159     &     0.356  &         0.722         \\
+& VADER score &       0.5792  &        0.181     &     3.196  &         \textbf{0.002}            \\ \hline
+
+
+\multirow{2}{*}{$r_{-10min}$} &   Intercept &    0.0259  &        0.310     &     0.084  &         0.933      \\
+& VADER score &       1.4632  &        0.276     &     5.304  &         \textbf{0.000}    \\ \hline
+
+\multirow{2}{*}{$r_{-20min}$} &   Intercept &   -0.2944  &        0.599     &    -0.492  &         0.624      \\
+& VADER score &       2.9952  &        0.518     &     5.784  &         \textbf{0.000} \\ \hline
+
+\multirow{2}{*}{$r_{-30min}$} &   Intercept &   -0.5945  &        0.850     &    -0.699  &         0.485    \\
+& VADER score &       3.7423  &        0.616     &     6.074  &         \textbf{0.000} \\ \hline
+
+\multirow{2}{*}{$r_{-1h}$} &   Intercept &      -1.2516  &        1.514     &    -0.826  &         0.410     \\
+& VADER Score &       5.3584  &        1.009     &     5.311  &        \textbf{0.000}         \\ \hline
+\end{tabularx}
+\caption[Regression Summary Short-Term Stock Returns in the Past and Tweet Sentiment]{OLS regression summary - Linear estimation of past stock-returns with VADER sentiment scores: This table shows the OLS estimates of the coefficients $a$ and $\beta$ in equation \ref{OLS_formula} fitted on ca. 220,000 Tweets and corresponding Dow Jones stock data from Oct 2015 to Aug 2016 with daily error clusters. Regressand: stock return $r_i$ (in basepoints) before a Tweet $i$ is posted. Regressor: VADER compound sentiment score $s_i$ of Tweet $i$ \label{vader_short_term_backw}}
+\end{table}
+
+To sum up, future stock returns are shown to be negatively correlated with VADER sentiment scores, whereas positive correlation is found for past stock returns. This suggests that sentiment of equity Tweets follows past investor sentiment in such a way that Tweets reflect the cause of the current stock price deviation through their embedded sentiment and at the same time predict a price reversal in the near future (i.e. 30 min).
+A brief scenario shall elucidate this: According to \citet{DeLong1990}, noise traders hold random beliefs about the fundamental value of a stock. If, by chance, the number of noise traders that have pessimistic beliefs about a stock significantly outrages the number noise traders that estimate the stock value higher than it actually is, the majority of noise traders tries to sell their stocks putting downward pressure on the stock price. I refer to this as a negative investor sentiment shock. Tweets reflecting the negative investor sentiment start to occur on Twitter with some time delay to the actual negative sentiment shock. Thus, the stock price has already been driven down by noise traders' pessimistic beliefs and rational arbitrageurs start to buy "under-priced" stocks, inducing a reversion back to the price backed by fundamentals. In this setting, stock returns preceding an equity Tweet, which reflects the pessimistic beliefs, are negative and therefore positively correlated with the negative sentiment score. Stock returns succeeding a Tweet are characterized by the stock price recovery. Hence, a negative correlation between returns in the near future and sentiment scores is observed. Figure \ref{fig:bathtubcycle} illustrates the scenario described. For positive investor sentiment shocks, the line of reasoning would be equivalent.
+
+\begin{figure}
+\captionsetup{justification=centering}
+\centering
+\includegraphics[width=0.8\textwidth]{graphics/bathtub_cycle.pdf}
+\caption[Theoretical Impact of Investor Sentiment on Stock Prices]{The illustration depicts the theoretical impact of a one-time increase in negative investor sentiment on stock prices. A negative investor sentiment shock is followed by a stock price decease as noise traders sell stocks. Rational arbitrageurs start to buy "under-priced" stocks thus triggering a reversal to the stock price backed by fundamental. Results indicate that sentiment extracted from Tweets follow investor sentiment with time-delay. 
+(In style of \citeauthor{Tetlock2007}, 2007) \label{fig:bathtubcycle}}
+\end{figure}
+
+While the relationship of VADER scores and short-term stock returns in the past is highly significant, a significant correlation of sentiment scores and short-term returns succeeding a Tweet was only found in the range of 20 to 40 minutes. There are two hypothesis explaining this phenomenon, though a combination of both is most likely. First, the unpredictability of noise traders' beliefs creates risk that deters rational arbitrageurs from aggressively betting against noise traders \citep{DeLong1990} and thereby impeding efficient reversal of prices to fundamentals. Second, new information affecting prices and changes in noise traders' beliefs over time increasingly distort the predicted price changes as more time passes.
+
+%
+%Trading Strategy
+%
+
+Results suggest that equity Tweets with positive/negative sentiment predict a reversion of the stock price movement, observed before a respective Tweet was posted. To further validate these findings, a simple trading strategy based on a hand-crafted sentiment classifier is introduced and tested on excess returns. The classifier assigns each Tweet a sentiment label 'positive' when its compound sentiment score exceeds the positive threshold $t$ and 'negative' when the score is negative and smaller than $-t$. Tweets with a score within the threshold boundaries $[-t,t]$ are classified as 'neutral'. The classifier can formulated mathematically as follows:
+
+\begin{equation}
  c(s) =
    \begin{cases}
      \text{"positive"} & \text{if } s \geq +t\\
      \text{"neutral"}  & \text{if } -t < s < +t \\
      \text{"negative"}  & \text{if } s \leq -t
    \end{cases}
-$$
+\end{equation}
 
-Based on the the 3-class sentiment classification a simple trading strategy shall be assessed: If a Tweet is classified as 'negative' buy the corresponding stock and hold it for 30 min / 1 hour. If a Tweet has was assigned the sentiment label 'positive' make a short sell and hold the position for 30 min / 1 hour. On the first glimpse, this trading strategy might seem counter intuitive. However, as a significantly negative correlation was found for 30 min lags, an inverted strategy that expects negative stock market movement in response to positive sentiment is justified. The estimated profit $\tilde{p}$ per trade when implementing the strategy for different classification thresholds $t$ is illustrated in figure \ref{fig:vader_class_threshold}. 
+Based on the the 3-class sentiment classification a simple trading strategy shall be assessed: If a Tweet is classified as 'negative' buy the corresponding stock and hold it for 30 min. If a Tweet is assigned the sentiment label 'positive' make a short sell and hold the position for 30 min. On the first glimpse, this trading strategy might seem counter intuitive. However, as a significant negative correlation was determined for 30 min lags, an inverted strategy that expects negative stock market movement in response to positive sentiment is justified. The estimated profit $\tilde{p}$ per trade when implementing the strategy for different classification thresholds $t$ is shown in Figure \ref{fig:vader_class_threshold}.
 
 \begin{figure}
 \captionsetup{justification=centering}
 \centering
-\includegraphics[width=0.8\textwidth]{graphics/vader_classification_theshold_30min.pdf}
-\caption{Estimated profit per trade when going short if VADER compound score $>t$ and long if sentiment score $< -t$; long/short position is hold for 30 min; significance boundaries for $\alpha =0.05$  \label{fig:vader_class_threshold}}
+\includegraphics[width=0.8\textwidth]{graphics/vader_classification_theshold_sampled.pdf}
+\caption[Evaluation of VADER Score Based Trading Strategy]{Estimated profit per trade when going short if VADER compound score $>t$ and long if sentiment score $< -t$; long/short position is hold for 30 min; significance boundary: 2.5\% and 97.5\% percentile of sampled mean profit distribution (50000 samples) corresponding to randomized trades \label{fig:vader_class_threshold}}
 \end{figure}
 
-The Hypothesis that the trading strategy based on VADER sentiment analysis does not lead to any excess return when compared to average 30 min returns can be clearly rejected. For instance, a classification threshold of $0.18$ leads to an estimated return of 0.0062 $\%$ per 30 minute trade, corresponding to a p-value of $6.38* 10^{-10}$. As illustrated in figure \ref{fig:vader_class_threshold}, all trading classification thresholds between $0.01$ and $0.58$ induce a significant excess return. Consistent with the the test for correlation, holding the trade position for 1 hour instead of 30 minutes does not lead to significant excess returns for a broad spectrum of classification thresholds. Detailed results are listed in appendix section \ref{vader_appendix}.
+To investigate the performance of this trading strategy I test against the hypothesis that the trading strategy cannot outperform a naive strategy that makes random decisions. The random trading strategy is implemented in such a way that it makes as many trades as the sentiment based strategy, but randomly decides when the trades are made and which trade action (buy/sell) is chosen each time. Building a statistical model to assess the trading strategy requires many assumption that may bias results. Hence, I simulate the strategy 50000 times to sample a distribution of mean profits. The 2.5\% and 97.5\% percentile of the sampled distributions with deceasing number of performed trades along the x-axis, in correspondence to the classification threshold $t$, is illustrated in Figure \ref{fig:vader_class_threshold} as well. 
+For all trading classification thresholds $t$ between $0.01$ and $0.5$, the sentiment based trading strategy yields significant excess returns when compared to the naive randomized strategy. In fact, equity Tweets that are assigned sentiment scores greater than $0.5$ occur very infrequent which would make a trading strategy with $t>0.5$ impractical in the first place.
+Since $t$ is the only hyper-parameter of this trading strategy, the fact that any arbitrary choice of $t \in (0,0.5]$ in advance would have lead to a significant excess returns, when compared to the dummy strategy, suggests that the strategy could have been implemented ex ante.
+
+However, the hypothetical sentiment-based trading strategy neglects any costs. To implement the strategy, frequent portfolio turnovers are required, resulting in high costs for commission, bid-ask spreads, limited market liquidity and taxes. Therefore, it is questionable whether the sentiment-based strategy would be still profitable in practice when incorporating these costs. 
 
 
 \subsection{Influence of Investor Sentiment on Daily Stock Price and Index Movements \label{granger_vader}}
-After assessing whether the sentiment of equity tweets foreshadows stock price movements within the next hour, I expand my analysis to longer time periods. Instead of assessing the sentiment of each Tweet individually, I aggregate the sentiment of Tweets posted within a day. On each workday the mean of all VADER sentiment scores corresponding to Tweets that are published between 4 pm ET (NYSE closes) and 4 pm the following day is calculated. Mondays all Tweets over the weekend since Friday 4pm are incorporated in the mean score. Based on these aggregations a time series $S_t$ of daily sentiment scores is established.
+After analyzing the linkage of Tweet sentiment and short-term stock price movements, I expand my analysis to longer time periods. Instead of assessing the sentiment of each Tweet individually, sentiment of Tweets posted within a day is aggregated. On each workday the mean of all VADER sentiment scores corresponding to Tweets that are published between 4 pm ET (NYSE closes) and 4 pm the following day is calculated. Mondays all Tweets over the weekend since Friday 4pm are incorporated in the mean score. Based on these aggregations a time series $S_t$ of daily sentiment scores is established.
 
-I am concerned with the questions if daily changes of investor sentiment on Twitter correlate with movements in the stock market. To  address this question I apply the statistical method of Granger Causality Analysis to the sentiment time series, denoted $S_t$, versus the corresponding stock price and Dow Jones Industrial Average (DJIA). Granger analysis is a econometric technique used to determine if one time series can be used to forecast another. Since the concept of causality in this context is questionable, I use it in a fashion as \citet{Gilbert2010} and \citet{Bollen2011} did in a comparable setting; not to actually test for causality but to examine if one time series contains predictive information about the other.
+I am concerned with the questions if daily changes of investor sentiment on Twitter forecasts movements in the stock market. To address this question I apply the statistical method of Granger Causality Analysis to the sentiment time series, denoted $S_t$, versus the corresponding stock price and Dow Jones Industrial Average (DJIA). Granger analysis is a econometric technique used to determine if one time series can be used to forecast another. Since the concept of causality in this context is questionable, I use it in a fashion as \citet{Gilbert2010} and \citet{Bollen2011} did in a comparable setting; not to actually test for causality but to examine if one time series contains predictive information about the other.
 
-At first, I make use of all tweets when calculating $S_t$ and conduct a Granger-Causality analysis with regard to the stock index DJIA. The DJIA time series $D_t$ that is used for the analysis reflects the daily index changes. It is defined as $D_t = DJIA_t - DJIA_{t-1}$ where one time step corresponds to one day (except on Mondays).
-
+At first, I make use of all tweets when calculating $S_t$ and conduct a Granger-Causality analysis with regard to the stock index DJIA. The DJIA time series $D_t$ reflects daily close-to-close index changes. It is defined as $D_t = DJIA_t - DJIA_{t-1}$ where one time step corresponds to one day (except on Mondays).
 To test whether the sentiment time series $S_t$ is able predict how the DJIA changes from day to day, I fit two linear models, $M_1$ and $M_2$, with OLS and assess their variance explained. $M_1$ makes only use of lagged of $D_t$ comparable to an univariate autoregression. The number of lags included in the model is determined by $n$. In addition to the first model, $M_2$ includes $n$ lagged values of the sentiment time series $S_t$.
+
+\begin{figure}
+\captionsetup{justification=centering}
+\centering
+\includegraphics[width=1\textwidth]{graphics/granger_plot.pdf}
+\caption[DJIA Changes and Daily Sentiment Scores - Time Series Plot]{Overlap of day-to-day difference $D_t$ of DJIA and daily mean sentiment score $S_t$. Due to differences in scale the z-scores of both time series are illustrated. \label{fig:comp_momentum_adadelta}}
+\end{figure}
 
 \begin{equation}
 M_1: D_t = \beta_0 + \sum_{i=1}^n \beta_i D_{t-i} + \epsilon_t
@@ -386,18 +481,10 @@ M_1: D_t = \beta_0 + \sum_{i=1}^n \beta_i D_{t-i} + \epsilon_t
 M_2: D_t = \beta_0 + \sum_{i=1}^n \beta_i D_{t-i} + \sum_{i=1}^n \gamma_i S_{t-i} + \epsilon_t
 \end{equation}
 
-Finally, the summed squares of residuals of both models are compared to determine if using lagged values of $S_t$ significantly increases the variance explained. Using the F-statistic, I test against the null hypothesis $H_0: \gamma_{\{1,..,n\}} = 0$. Based on the p-values listed in table \ref{table:granger}, the hypothesis that $S_t$ is not able to forecast changes in the DJIA cannot be rejected. 
+Finally, the summed squares of residuals of both models are compared to determine if using lagged values of $S_t$ significantly increases the variance explained. Using the F-statistic, I test against the null hypothesis $H_0: \gamma_{\{1,..,n\}} = 0$. Based on the p-values listed in Table \ref{table:granger}, the hypothesis that $S_t$ is not able to forecast changes in the DJIA cannot be rejected. 
 
- As many firms in the DJIA receive only little attention on Twitter while other firms such as Apple, Microsoft and Goldman Sachs account for most of the equity Tweets, results might be biased due to the imbalance. Hence, I conduct the Grange-Causality analysis in similar fashion for the stock price movements of Apple, Microsoft and Goldman Sachs individually. In each case only Tweets containing the respective stock ticker are included in the sentiment scores $S_t$. The resulting p-values are illustrated in table \ref{table:granger}, as well.
-
-Since no statistical significance could be found, it is reasonable to assume that investor sentiment in equity Tweets extracted through VADER can barely forecast the stock market. 
-
-\begin{figure}
-\captionsetup{justification=centering}
-\centering
-\includegraphics[width=1\textwidth]{graphics/granger_plot.pdf}
-\caption{Overlap of day-to-day difference $D_t$ of DJIA and daily mean sentiment score $S_t$. Due to differences in scale the z-scores of both time series are illustrated. \label{fig:comp_momentum_adadelta}}
-\end{figure}
+As many firms in the DJIA receive only little attention on Twitter while other firms such as Apple, Microsoft and Goldman Sachs account for most of the equity Tweets, results might be biased due to the imbalance. Hence, I conduct the Granger-Causality analysis in similar fashion for the stock price movements of Apple, Microsoft and Goldman Sachs individually. In each case only Tweets containing the respective stock ticker are included in the sentiment scores $S_t$. The resulting p-values are illustrated in Table \ref{table:granger} as well.
+Since no statistical significance could be found, it is reasonable to assume that investor sentiment in equity Tweets extracted through VADER can barely forecast the stock market on a day-to-day basis. 
 
 \begin{table}
 \centering
@@ -413,35 +500,51 @@ lag & DJIA & AAPL & MSFT & GS \\ \hline
 6 days  & 0.6552 & 0.3658 & 0.8414 & 0.3077 \\ \hline
 
 \end{tabular}
-\caption{Statistical significance (p-values) of Granger-Causality correlation between daily sentiment score $S_t$ and daily stock market changes $D_t$ \label{table:granger}}
+\caption[Statistical Significance of Granger-Correlation Bewteen Aggregated VADER Sentiment Scores and Daily DJIA Changes]{Statistical significance (p-values) of Granger-Causality correlation between daily sentiment score $S_t$ and daily stock market changes $D_t$ \label{table:granger}}
 \end{table}
 
-\section{Machine Learning Methods}
+
+\citet{Bollen2011, Karabulut2013} conducted studies with comparable methodologies. They also use the method of Granger-Causality analysis to investigate how social media content is related to the daily changes of the Dow Jones Industrial Average. Interestingly, both find a significant relationship between measures of public mood extracted from social media and the DJIA. 
+The only remarkable difference in their approaches from the one, described in this section, is the scope of the underlying social media corpus. While I only use stock-related Tweets, they extract sentiment from the entire corpus of English Tweets and US Facebook posts respectively. 
+This may explain the different results. While public mood, measured in many different ways, was shown to be significantly correlated with future stock returns, my study focuses on stock market related social media content. Hence, the extracted sentiment reflects beliefs towards the value of specific stocks within the finance affine clientele rather than expressing the general mood state of the entire English speaking social media community.
+
+I conclude that noise traders beliefs about the true value of stocks may be influenced by general public mood states as suggested by \citeauthor{Bollen2011} and \citeauthor{Karabulut2013}. However, there is little evidence for a relationship between noise traders beliefs and stock related content on Twitter aggregated on a daily basis. Instead, meaningful interactions between stock returns and sentiment of equity Tweets are found in an hour range (section \ref{vader_short_term}).
+Therefore, it is reasonable to assume that sentiment extracted from equity Tweets follows short-term fluctuations in investor sentiment rather than forecasting changes in investor sentiment on a daily to weekly basis.
+
+\section{Machine Learning Methods \label{ml_methos}}
 Despite the fact that sentiment classification methods based on feature lexica (Section \ref{lexion-approach}) have a long tradition in NLP, machine learning approaches gained popularity in the domain of sentiment analysis throughout the last decade. Building and maintaining comprehensive sentiment lexica and semantic rules (e.g. for negation) demands strong expertise and extensive effort from linguists.
 
 In contrast, modern machine learning methods do not require sophisticated hand crafted features as input. In many cases good results can be achieved by using raw text or low level features that do not require much effort to build. For instance, commonly used classifiers such as Naive Bayes or Support Vector Machines were shown to work well with simple word or bi-gram occurrence counts \citep{Pang2002}. 
 
 A more recent development in sentiment analysis is feature learning. "It allows to learn expressive features for the documents directly from the raw data" \citep{Albertini2014}. In fact, machine learning algorithms such as in \citet{Socher2011a} and \citet{Maas2011} are used to generate continuous vector-space representation for words and phrases. Based on learned word vector features, powerful deep learning methods such as recursive and recurrent neural networks have been used in latest research to perform sentiment analysis.
 
-After performing sentiment analysis on the collected equity tweets with a lexicon based approach, I aim to asses the potential of machine learning for making smart trading decisions based on investor sentiment expressed in Tweets. The equity Tweets that were collected differ in many ways from an usual sentiment analysis setting. First, words, phrases and tokens (i.e. emoticons) that clearly express sentiment orientation (e.g. excited, fantastic, bad, success ...) only occur sparsely within Tweets related to stocks. Second, the shortness of the Tweets combined with the use of abbreviated language and special expressions such as hashtags. Even for humans it is often hard to interpret the intended meaning and asses the semantic orientation of such Tweets. In some cases, knowledge of finance specific jargon is necessary to do so.
+After performing sentiment analysis on the collected equity tweets with a lexicon based approach, I aim to asses the potential of machine learning for making smart trading decisions based on investor sentiment expressed in Tweets. The equity Tweets that were collected differ in many ways from an usual sentiment analysis setting. First, words, phrases and tokens (i.e. emoticons) that clearly express sentiment orientation (e.g. excited, fantastic, bad, success ...) only occur sparsely within Tweets related to stocks. Second, the shortness of the Tweets combined with the use of abbreviated language and special expressions such as hashtags makes it, even for humans, hard to interpret the intended meaning and asses the semantic orientation of such Tweets. In some cases, knowledge of finance specific jargon is necessary to do so.
 
 These characteristics make it very difficult to reliably extract investor sentiment with a lexicon based approaches such as VADER. The underlying general-purpose lexicon neither comprises features specific to the task, nor can relevant nuances.
 
-Theoretically, machine learning models have the potential to learn domain specific features and create sophisticated internal representation that allow them to capture such nuances, relevant for successfully assessing investor sentiment. It is my goal to examine whether it is actually possible to forecast stock price changes based on the collected equity Tweets with means of modern machine learning. First, I create a benchmark by creating several base line models that use standard machine learning classifiers. In a further step, I implement a state of the art deep learning model for sentiment classification and analyse if it capable of making smart trading decisions given the Tweets as input.
+Theoretically, machine learning models have the potential to learn domain specific features and create sophisticated internal representation that allow them to capture such nuances, relevant for successfully assessing investor sentiment. In section \ref{lexion-approach}, a significant relationship between VADER scores and short-term stock market returns was found. The question I pose and try to answer in the following is whether modern machine learning methods are able to forecast stock price changes based on the collected equity Tweets even better than the lexicon-based approach VADER. First, I establish a benchmark by creating several base line models that use standard machine learning classifiers. In a further step, I implement a state of the art deep learning model for sentiment classification and analyse if it capable of making smart trading decisions given the Tweets as input. Due to the computational burden that comes with machine learning, the following analysis will be restricted to 30 minute and 1 hour stock price returns.
 
-\subsection{Classification based on word occurrence counts}
-In this section a simple machine learning baseline model for sentiment classification is introduced. Occurrence counts of distinct words and tokens in the tweets as are used as features. To produce these features, the Tweets are split up into tokens and words, followed by creating a word-count matrix. Given $n$ Tweets and $V$ as set of all words/tokens occurring throughout the tweets, the token-count matrix is defined as $C \in \mathbb{N}^{n \times |V|}$, where $c_{i,j}$ denotes the number of times token/word $j$ occurs in tweet $j$.  Due to the short length of a tweet and sparsity of the set of possible tokens/words, most counts $c_{i,j}$ are 0.
+\subsection{Classification based on word occurrence counts \label{baseline_ml}}
+In this section a simple machine learning baseline model for sentiment classification is introduced. Occurrence counts of distinct words and tokens in the Tweets are used as features. To produce these features, the Tweets are split up into tokens and words, followed by creating a word-count matrix. Given $n$ Tweets and $V$ as set of all words/tokens occurring throughout the Tweets, the token-count matrix is defined as $C \in \mathbb{N}^{n \times |V|}$, where $c_{i,j}$ denotes the number of times token/word $j$ occurs in tweet $i$.  Due to the short length of a tweet and the large set of possible tokens/words, most counts $c_{i,j}$ are 0 resulting in a sparse feature space.
 
-Using the word-count matrix $C$ as input, three different machine learning classifiers are applied, attempting to predict the the stock price movement label of a tweet as assigned in \ref{labelling}. Since these labels were created based on the development of the associated stock price within the next 30 min / 1 hour, the labels do not necessarily reflect text sentiment as known from Natural Language Processing. I use 5-fold cross validation to determine classification accuracy and F1 score. Moreover, the estimated profit per trade of a trading strategy based on the classifiers sentiment predictions is calculated. The trading strategy can be formulated the following way: 
+Using the word-count matrix $C$ as input, three different machine learning classifiers are applied, attempting to predict the the stock price movement label of a tweet as assigned in \ref{labelling}. First a simple probabilistic classifier that assumes independence of the features, known as Naive Bayes Classifier, is applied. As word-occurrence counts are sparse features, dependencies among the words only play a minor role. Thus, Naive Bayes Classifiers work surprisingly well in the domain of NLP. Another classifier I use due its good performance in sparsity are random forests, an ensemble learning method based on decision trees. As a third classification approach, Support Vector Machines (SVM) are chosen. SVMs attempt to divide classes in the feature space by a clear gap that is as wide as possible. SVMs are often used with kernels that implicitly project the input data to higher-dimensional feature space to allow for non-linear separation. However, I do not apply any kernel method since the word-count feature space is already high-dimensional as well as sparse and thus can be separated linearly.
+
+To assess the performance of the three classifiers I use 5-fold cross validation. Therefore the data is split into five parts of equal size. Then the classifiers are trained on four of the five splits and validation metrics are calculated on the remaining split. I repeat this process five times and shuffle the splits each time so that all five splits were used for validation. In the end, the metrics calculated in all five validation runs are averaged. 
+
+Specifically, I calculate two common classification metrics - accuracy and F1 score. Accuracy simply states the percentage of training samples that were classified correctly. However, when class labels are not uniformly distributed among the classes, the use of accuracy can be misleading. In our case 50\% of the Tweets were labelled neutral while the classes "positive" and "negative" equally share the remaining half. To illustrate the problem, two naive classifiers that assign all Tweets the label "neutral" and "positive" respectively shall be considered. Although both classifiers share the same level of naivety, classifying all Tweets "neutral" results in an accuracy of  50\% whereas always assigning "positive" only classifies 25\% of the data correctly. Due to the sensitivity of the accuracy metric towards imbalanced classes, the F1 score is often consulted as validation metric in classification settings since it accounts for possible imbalances among the classes. Hence, I primarily use the F1 score for assessing and comparing performance of classifiers.
+
+Moreover, the estimated profit per trade of a trading strategy based on the classifiers predictions is calculated. The trading strategy can be formulated the following way: 
 \begin{itemize}
 \item If a positive stock price reaction is predicted go long and hold the position  for 30 min, respectively 1 hour
-\item If the class "neutral" is predicted do not trade the stock corresponding to the tweet
+\item If the class "neutral" is predicted do not trade the stock corresponding to the Tweet
 \item If a negative stock price reaction is predicted go short and hold the position for 30 min, respectively 1 hour
 \end{itemize}
 
 
-The evaluation of the three classification methods Naive Bayes, Support Vector Machines and Random Forests is illustrated in table \ref{table:bag-of-words-results}. Considering the F1 score, the Random Forest approach outperforms the other two classifiers by 3 percent points. Nonetheless, an F1 score of less than 0.4 indicates that all three sentiment classifiers do not perform much better than picking one of the classes by chance.
+The evaluation of the three classification methods Naive Bayes, Support Vector Machines and Random Forests is illustrated in Table \ref{table:bag-of-words-results}. Considering the F1 score both both time lags, the Random Forest approach outperforms the other two classifiers by more than 3 percent points. Nonetheless, an F1 score of less than 0.4 indicates that all three sentiment classifiers do not perform much better than picking one of the classes by chance.
 The estimated profits are close to zero and all of the corresponding p-values are greater than 20\%, concluding that the proposed trading strategy based on standard machine learning sentiment classification does not lead to significant excess returns.
+
+Since the Tweets were labelled "negative", "positive" and "negative" in correspondence to the approximately normally distributed 30 min / 1 hour stock returns, the training data might be very noisy. Hence, it is very hard for baseline machine learning models to learn from the provided data and make meaningful predictions.
 
 \begin{table}
 \centering
@@ -458,11 +561,11 @@ Classifier & metric & 30 min lag & 1 hour lag \\ \hline
  & estimated profit & $7.041 * 10^{-6}$ & $-2.91 * 10^{-6}$ \\
   & p-value & $0.2595$ & $0.5225$\\ \hline
 \multirow{4}{*}{Random Forests} & accuracy & $0.4509$ & $0.4505$ \\
- & F1 score & $0.0116855371$ & $0.3947$ \\
+ & F1 score & $0.3922$ & $0.3947$ \\
  & estimated profit & $4.42 * 10^{-6}$ & $-3.74 * 10^{-6}$ \\
   & p-value & $0.3154$ & $0.5036$ \\ \hline
 \end{tabular}
-\caption{5-fold cross validation metrics for various supervised 3-class sentiment classification methods based on word occurance features. Estimated profit per trade when going long at positive assigned label and short when negative sentiment is predicted. One trade: holding short/long position for a) 30 minutes b) 1 hour\label{table:bag-of-words-results}}
+\caption[Validation Metrics - Predicting Short-Term Stock Returns With Basic Machine Learning Classifiers]{5-fold cross validation metrics for various supervised 3-class sentiment classification methods based on word occurance features. a) classifiaction accuracy b) F1 Score c) estimated profit $\hat{p}$ per trade when going long at positive assigned label and short when negative sentiment is predicted. One trade: holding short/long position for 30 minutes and 1 hour respectively d) p-value of estim. profit under i.i.d. assumption; $H_0: \hat{p}=0$ \label{table:bag-of-words-results}}
 \end{table}
 
 \subsection{Deep Learning for Sentiment Classification}
@@ -479,13 +582,12 @@ With increasing sentence length, the depth of the tree-shaped RNNs usually grows
 \subsection{A Deep Learning Approach - Tree-Structured Long Short-Term Memory Networks \label{tree_lstm}}
 
 \subsubsection{Model}
-Amongst other techniques such as convolutional neural networks as presented in \citet{Kim2014}, tree-structured LSTMs generate state-of-the-art results in terms of sentiment classification. For this reason, I implement a tree LSTM model and apply it to the equity Tweets that were collected.
+Amongst other techniques such as convolutional neural networks as presented in \citet{Kim2014}, tree-structured LSTMs generate state-of-the-art results in terms of sentiment classification on well-established corpora. For this reason, I implement a tree LSTM model and apply it to the equity Tweets that were collected.
 
-Although deep learning models can be very powerful, they might be difficult to train and require huge amounts of data as well as a lot of computation power. Also fine tuning of hyperparameters and proper use of regularization are important to ensure good performance without overfitting the model.
-
+Although deep learning models can be very powerful, they might be difficult to train and require huge amounts of data as well as a lot of computation power. Usually the success of deep learning heavily depends on the amount and quality of training data. Also fine tuning of hyperparameters and proper use of regularization are important to ensure good performance without overfitting the model.
 Since a technical and mathematical details of the applied model and training process are beyond the financial scope of this thesis, they are described in the appendix. In the following, I provide a rough description of the model as well as an outline of steps that were necessary to prepare the data inputs and train the model.
 
-RNNs and tree-structure LSTMs rely on a tree-like representation of the text that shall be passed through the network. As Tweets can vary in its length and structure it is necessary to determine such a hierarchical representation for every distinct Tweet. I use the Stanford CoreNLP\footnote{http://stanfordnlp.github.io/CoreNLP/} tool with a tf-idf language model to generate a binary constituency parse tree (figure \ref{parse_tree}) for each Tweet. In a following step, all non-terminal unary nodes of the tree (e.g. PRP in figure \ref{parse_tree}) are removed so that the tree is strictly binary. Based on the binarized parse tree, a recursive neural network structure, as illustrated in figure \ref{fig:rnn}, can be build individually for each Tweet.
+RNNs and tree-structure LSTMs rely on a tree-like representation of the text that shall be passed through the network. As Tweets can vary in its length and structure it is necessary to determine such a hierarchical representation for every distinct Tweet. I use the Stanford CoreNLP\footnote{http://stanfordnlp.github.io/CoreNLP/} tool with a tf-idf language model to generate a binary constituency parse tree (Figure \ref{parse_tree}) for each Tweet. In a following step, all non-terminal unary nodes of the tree (e.g. PRP in Figure \ref{parse_tree}) are removed so that the tree is strictly binary. Based on the binarized parse tree, a recursive neural network structure, as illustrated in Figure \ref{fig:rnn}, can be build individually for each Tweet.
 
 \begin{figure}
 \captionsetup{justification=centering}
@@ -499,7 +601,7 @@ RNNs and tree-structure LSTMs rely on a tree-like representation of the text tha
         \includegraphics[width=0.83\textwidth]{graphics/parse_tree.png}
         \caption{Constituency Parse Tree\protect\footnotemark \label{parse_tree}}
    \end{subfigure}
-\caption{Scematical illustration of a) recursive neural network for sentiment classifiaction and b) constituency parse tree in chomsky normal form \label{fig:RNN_parse_tree}}
+\caption[Scematical Illustration Recursive Neural Network and Parse Tree]{Scematical illustration of a) recursive neural network for sentiment classifiaction and b) constituency parse tree in chomsky normal form \label{fig:RNN_parse_tree}}
 \end{figure}
 
 \footnotetext[1]{\citet{Socher2013}}
@@ -507,7 +609,7 @@ RNNs and tree-structure LSTMs rely on a tree-like representation of the text tha
 
 As neural networks require numerical vectors as input, words and tokens represented by terminal nodes in the parse tree need to be converted into word embeddings. I retrieve word vectors from the semantic vector space model GloVe \citep{Pennington2014}. Each word/token is represented by a 300-dimensional vector of real numbers that already embodies semantic and syntactic information about the respective word/token.
 
-On the first stage of forward propagation, two word embeddings (b and c in figure \ref{fig:rnn}) are fed into a LSTM unit which aggregates the two word vectors, resulting in a abstract internal representation ($p_1$), a 100-dimensional vector. Then, level by level up the tree, internal representations and word embeddings are fed through LSTM units creating semantic representations of increasing abstraction. This process culminates in a single vector at the root of the tree which is an aggregation of sentiment relevant information gathered from the entire Tweet. Finally, a softmax classifier that uses the root vector representation as input calculates probabilities for the three sentiment classes 'negative', 'neutral, 'positive. The sentiment label with the highest probability is then assigned to the Tweet.
+On the first stage of forward propagation, two word embeddings (b and c in Figure \ref{fig:rnn}) are fed into a LSTM unit which aggregates the two word vectors, resulting in a abstract internal representation ($p_1$), a 100-dimensional vector. Then, level by level up the tree, internal representations and word embeddings are fed through LSTM units creating semantic representations of increasing abstraction. This process culminates in a single vector at the root of the tree which is an aggregation of sentiment relevant information gathered from the entire Tweet. Finally, a softmax classifier that uses the root vector representation as input calculates probabilities for the three sentiment classes 'negative', 'neutral, 'positive. The sentiment label with the highest probability is then assigned to the Tweet.
 
 Throughout the tree-structured LSTM network there are 220,703 parameters (i.e. weights and biases) that need to be trained. Furthermore, word embeddings are included in the training updates. As suggested in \citet{Tai2015} I use a cross entropy loss with L2 regularization as cost function that shall be minimized during training. Optimization steps are performed through stochastic gradient decent (SGD) in combination with AdaDelta, an adaptive learning rate method introduced by \citet{Zeiler2012}.
 
@@ -519,29 +621,64 @@ Throughout the tree-structured LSTM network there are 220,703 parameters (i.e. w
 \end{figure}
 
 \subsubsection{Training Approaches}
-To correctly assess the performance of artificial neural network models, generating training, development and test splits of the underlying data was shown to be vital. While the training split is solely used for training the model  with SGD, the development split is is held back during training to measure the performance in order to do hyper parameter tuning, avoid overfitting and/or compare different model variants. Although the development split is never directly used for training, it indirectly affects the final model configuration throughout the process of model selection and parameter tuning. Therefore, a third split, the test split, is held back and never even touched until the final model configuration has been determined. For the final assessment of the chosen model, performance metrics are calculated based on the test set.
+To correctly assess the performance of artificial neural network models, generating training, development and test splits of the underlying data was shown to be vital. While the training split is solely used for training the model  with SGD, the development split is is held back during training to measure the performance in order to do hyper parameter tuning, avoid overfitting and/or compare different model variants. Although the development split is never directly used for training, it indirectly affects the final model configuration throughout the process of model selection and parameter tuning. Therefore, a third split, the test split, is held back and never even touched until the final model configuration has been determined. For the final assessment of the chosen model, performance metrics are calculated based on the test set. Figure \ref{fig:flow_chart_lstm} depicts the whole process of data preparation, training, tuning and validation.
 
 The best way to measure the final performance of a model is to test it on data that was independently retrieved from the training and development split. Thus, I randomly sample training and development split (85\%/15\%) from the Tweets that were posted between October 2015 and June 2016, whereas the test data is comprised of Tweets that were published at a later point of time i.e. from July to September 2016.
-
-To train the model, several approaches are used. First, I train the tree-based LSTM with well establish sentiment corpora, namely the Stanford Sentiment Treebank and the Sanders Analytics Twitter Sentiment Corpus\footnote{Source: http://www.sananalytics.com/lab/twitter-sentiment/}. 
-
-The Stanford Sentiment Treebank (SST) was established by \citet{Socher2013} addressing the need for a sentiment corpus that is customized for tree-based models. It comprises of 11,855 sentences from movie reviews. In contrast to a regular sentiment datasets, the sentences are provided as parse trees in which every node was assigned a sentiment label (figure \ref{fig:sst}). This structure allows a sentiment model to optimally capture the basic concepts of sentiment polarity and negation during training. Although movie reviews are notably different from equity Tweets, the SST constitutes an excellent basis for training a sentiment classifier.
 
 \begin{figure}
 \captionsetup{justification=centering}
 \centering
 \includegraphics[width=0.6\textwidth]{graphics/sst.png}
-\caption{Stanford Sentiment Treebank - Example of a movie review parse tree with sentiment labels \citep{Socher2013} \label{fig:sst}}
+\caption[Structure of Stanford Sentiment Treebank Data]{Stanford Sentiment Treebank - Example of a movie review parse tree with sentiment labels \citep{Socher2013} \label{fig:sst}}
 \end{figure}
 
-Sander's Twitter Sentiment Corpus consists of 5513 hand-classified Tweets that refer to large Dow Jones companies such as Apple and Microsoft. Due to its nature, the corpus provides excellent training data for the context of equity micro blogs and investor sentiment.
+To train the model, several approaches are used. First, I train the tree-based LSTM with well establish sentiment corpora, namely the Stanford Sentiment Treebank and the Sanders Analytics Twitter Sentiment Corpus\footnote{Source: http://www.sananalytics.com/lab/twitter-sentiment/}. 
+The Stanford Sentiment Treebank (SST) was established by \citet{Socher2013} addressing the need for a sentiment corpus that is customized for tree-based models. It comprises of 11,855 sentences from movie reviews. In contrast to a regular sentiment datasets, the sentences are provided as parse trees in which every node was assigned a sentiment label (Figure \ref{fig:sst}). This structure allows a sentiment model to optimally capture the basic concepts of sentiment polarity and negation during training. Although movie reviews are notably different from equity Tweets, the SST constitutes an excellent basis for training a sentiment classifier.
 
-In a second approach the model is trained with the collected equity Tweets directly. The Tweets are labelled as described in section \ref{labelling}. Since 30 min and 1 hour stock responses were examined in the context of VADER, I continue with this approach and separately train the tree LSTM network with labels corresponding to the 30 min lag and 1 hour lag.
+Sander's Twitter Sentiment Corpus consists of 5513 hand-classified Tweets that refer to large Dow Jones companies such as Apple and Microsoft. Due to its nature, the corpus provides excellent training data for the context of equity micro blogs and investor sentiment. When trained and validated on the two corpora, the model improves fast and monotonous, converging after five training epochs.
+
+\begin{figure}
+\captionsetup{justification=centering}
+\centering
+\includegraphics[width=0.7\textwidth]{graphics/dev_accuracy_plot.pdf}
+\caption[Classification Accuracy Throughout The Training]{Classification accuracy on the development split throughout the process of training on the Tweets labelled according to a) 30 min and b) 1 hour stock price responses \label{fig:dev_accuracy}}
+\end{figure}
+
+
+In a second approach the model is trained with the collected equity Tweets directly. The Tweets are labelled as described in section \ref{labelling}. Since 30 min and 1 hour stock responses were examined in the context of VADER, I continue with this approach and separately train the tree LSTM network with labels corresponding to the 30 min lag and 1 hour lag. In contrast to he training on SST and Sander's Corpus, neither training nor development error seem to decrease during the process of training. As illustrated in Figure \ref{fig:dev_accuracy}, the classification accuracy measured on the development split randomly changes during training, not indicating any improvement.
+
+
+
 
 \subsubsection{Validation and Model Assessment}
-The model which was trained on the Stanford Sentiment Treebank and Sanders Twitter Sentiment Corpus is first validated on a test split that is comprised of data from both datasets. The trained model predicts the correct sentiment label with 64.79\% accuracy (F1 score =  0.6471), which is a remarkable result given the fact that only root labels of the SST were used for training. The chance of mislabelling of a positive sentence/Tweet as negative and vice versa within the test set is lower than 15 \%.
+The model that was trained on the Stanford Sentiment Treebank and Sanders Twitter Sentiment Corpus is first validated on a test split that is comprised of data from both datasets. The trained model predicts the correct sentiment label with 64.79\% accuracy (F1 score =  0.6471), which is a remarkable result given the fact that only root labels of the SST were used for training. The chance of mislabelling of a positive sentence/Tweet as negative and vice versa within the test set is lower than 15 \%.
 
-The important question is whether the model can generalize well and predict short-term stock price changes based on Tweet sentiment. Thus, I validate the model performance by predicting sentiment labels for the Tweets in the test split and calculating measures of performance. Because the texts included in Stanford Sentiment Treebank data are more opinionated than equity Tweets the majority ($>$90\%) of Tweets in the test set is predicted to be neutral. Both accuracy and F1 score (see table \ref{table:tree_lstm_test}) indicate that predictions do not notably outperform random classification by chance. Although the estimated profit per trade exceeds average market performance ($-1.68 * 10^{-5}$ per 30 min lag), it  cannot be considered a significant excess return (p-val = 0.326).
+\begin{table}
+\centering
+\captionsetup{justification=centering}
+\begin{tabular}{ |l|l|c|c| }
+\hline
+Training Data & metric & 30 min lag & 1 hour lag \\ \hline
+\multirow{4}{*}{SST \& Sanders Corpus} & accuracy & $0.4915$ & $0.4915$ \\
+ & F1 score & $0.3527$ & $0.3527$ \\
+ & estimated profit & $5.95 * 10^{-7}$ & $5.96* 10^{-7}$ \\
+ & p-val profit & $0.2918$ & $0.5095$ \\ \hline
+\multirow{4}{*}{Collected Tweets (30 min lag label)} & accuracy & $0.3744$ & \\
+ & F1 score & $0.3777$ &  \\
+ & estimated profit & $3.2 * 10^{-7}$ & \\
+ & p-val profit & $0.2995$ &  \\ \hline
+\multirow{4}{*}{Collected Tweets (1h lag label)} & accuracy & & $0.3387 $  \\
+ & F1 score & & $0.3430$ \\
+ & estimated profit & & $-1.37 * 10^{-5}$ \\
+ & p-val profit & & $0.1907$ \\ \hline
+\end{tabular}
+\caption[Validation Metrics - Predicting Short-Term Stock Returns With A Tree-LSTM Network]{Validation results based on test split (49,000 Tweets) : a) classification accuracy b) F1 score c) estimated profit $\hat{p}$ per trade when deploying a trading strategy based on the sentiment predictions d) p-value of estim. profit under i.i.d. assumption; $H_0: \hat{p}=0$\label{table:tree_lstm_test}}
+\end{table}
+
+The important question is whether the model can generalize well and predict short-term stock price changes based on Tweet sentiment. Thus, I validate the model performance by predicting sentiment labels for the Tweets in the test split and calculating measures of performance. Because the texts included in Stanford Sentiment Treebank data are more opinionated than equity Tweets, the majority ($>$90\%) of Tweets in the test set is predicted to be neutral. Both accuracy and F1 score (see Table \ref{table:tree_lstm_test}) indicate that predictions do not notably outperform random classification by chance. Furthermore, a trading strategy as in section \ref{vader_short_term} that bets on a reversion of the current stock price movement in response to Tweets with negative/positive sentiment polarity is analyzed. The estimated profit per 30 min trade of such a trading strategy exceeds average market return of -1.68 basepoints per 30 min lag. However, even under the strong assumption of independent and identically distributed 30 min stock price responses, it cannot be considered a significant excess return (p-val = 0.2918). Equivalent results were found for a training strategy wherein positions are hold for 1 hour.
+
+Consistent with the problems that were observed during training, validation results as shown in Table \ref{table:tree_lstm_test} indicate that the model, trained with the labelled equity Tweets, is not able to make predictions that are significantly better than randomly selecting one of the three classes.
+
 
 \begin{table}
 \centering
@@ -557,42 +694,28 @@ lag & DJIA & AAPL & MSFT & GS \\ \hline
 6 days  & 0.9176 & 0.7187 & 0.0918 & 0.8741 \\ \hline
 
 \end{tabular}
-\caption{Statistical significance (p-values) of Granger-Causality correlation between daily sentiment score $S_t$ and daily stock market changes $D_t$; $S_t$ is defined as weighted sum of sentiment labels troughout a day, predicted by the tree-structured LSTM model trained on SST and Sanders Corpus; Null Hypothesis: encorporating lagged sentiment values in the regression model does not increase the variance explained (see secion \ref{granger_vader})\label{table:granger_lstm}}
+\caption[Statistical Significance of Granger-Correlation Bewteen Aggreagted Tree-LSTM Sentiment Scores and Daily DJIA Changes]{Statistical significance (p-values) of Granger-Causality correlation between daily sentiment score $S_t$ and daily stock market changes $D_t$; $S_t$ is defined as weighted sum of sentiment labels troughout a day, predicted by the tree-structured LSTM model trained on SST and Sanders Corpus; Null Hypothesis: encorporating lagged sentiment values in the regression model does not increase the variance explained (see section \ref{granger_vader})\label{table:granger_lstm}}
 \end{table}
 
-In a further step, I asses the model's ability to predict stock market changes on a daily basis. First, predicted sentiment labels corresponding to Tweets throughout a day are aggregated to a daily sentiment score. This score is defined as weighted sum of the labels, where -1 denotes negative, 1 positive and 0 neutral sentiment. Similar to section \ref{granger_vader}, a Granger-Causality analysis is used to investigate the relationship of daily sentiment scores and stock markets. Neither for the DJIA nor for specific stocks are found to be significantly Granger-correlated with the respective time series of daily sentiment scores (see table \ref{table:granger_lstm}).\\
+In a further step, I asses the model's ability to predict stock market changes on a daily basis. First, predicted sentiment labels corresponding to Tweets throughout a day are aggregated to a daily sentiment score. This score is defined as weighted sum of the labels, where -1 denotes negative, 1 positive and 0 neutral sentiment. Similar to section \ref{granger_vader}, a Granger-Causality analysis is used to investigate the relationship of daily sentiment scores and stock markets. Table \ref{table:granger_lstm} holds the p-values corresponding to the Granger-Causality analysis performed. Neither for the DJIA nor for specific stocks are found to be significantly Granger-correlated with the respective time series of daily sentiment scores.
 
-TODO: Write about validation of model trained with Tweets
-
-
-\begin{table}
-\centering
-\captionsetup{justification=centering}
-\begin{tabular}{ |l|l|c|c| }
-\hline
-Training Data & metric & 30 min lag & 1 hour lag \\ \hline
-\multirow{4}{*}{SST \& Sanders Corpus} & accuracy & $0.4915$ & $0.4915$ \\
- & F1 score & $0.3527$ & $0.3527$ \\
- & estimated profit & $-5.95 * 10^{-7}$ & $-5.96* 10^{-7}$ \\
- & p-val profit & $0.3260$ & $0.3261$ \\ \hline
-\multirow{4}{*}{Collected Tweets (30 min lag label)} & accuracy & $0.3744$ & \\
- & F1 score & $0.3777$ &  \\
- & estimated profit & $3.2 * 10^{-7}$ & \\
- & p-val profit & $0.2995$ &  \\ \hline
-\multirow{4}{*}{Collected Tweets (1h lag label)} & accuracy & & $0.0000$  \\
- & F1 score & & $0.0000$ \\
- & estimated profit & & $0.0000* 10^{-6}$ \\
- & p-val profit & & 0.00 \\ \hline
-\end{tabular}
-\caption{Validation results based on test split\label{table:tree_lstm_test}}
-\end{table}
+All in all, results indicate that machine learning methods are unsuited for the task of predicting stock market returns by extracting relevant sentiment from equity Tweets. When trained standard sentiment corpora the models do not generalize well enough in order to make useful predictions in the domain of financial social media content. If directly trained with the Tweets, labelled with the corresponding short-term stock market return, the models fail to learn meaningful patterns due to the fuzziness of the data. Since deep learning model are rely more on good training data quality than simpler machine learning classifiers, they perform worse on the task.
 
 
+\section{Conclusion \label{conclusion}}
+This study systematically analyses the relationship between sentiment in stock related Tweets and stock returns. Addressing the core question, how the content of stock related Tweets is linked stock price movements, I assess multiple methods for sentiment extraction and consider different timespans for interaction. 
 
- 
+Beside traditional lexicon-based sentiment analysis approaches, I analyze the capability of machine learning models to capture sentiment from Tweets, relevant for predicting stock market responses. Due to the fuzziness of stock market data, basic machine learning classifiers as well as deep learning models are found to be not capable of learning to make valuable stock market predictions based on equity Tweets.
 
-\section{Conclusion}
-TODO
+Studies that investigate the interaction of investor sentiment in social media and daily stock markets returns \citep{Bollen2011, Karabulut2013} conclude that noise traders beliefs about the true value of stocks may be influenced by general public mood states. 
+In contrast, I find no statistical evidence for a relationship between sentiment, extracted from equity Tweets, and daily stock market returns. A likely explanation for the different findings might be that \citeauthor{Bollen2011} and Karabulut use general public mood in social media as poxy for investor sentiment, whereas this study specifically concentrates on stock market related content on Twitter.
+
+When examining shot-term interactions, I find a statistically significant negative correlation of sentiment in equity Tweets, extracted with VADER, and stock returns in a 20 to 40 minute range after a respective Tweet is posted. Moreover, stock returns preceding a Tweet are shown to be positively correlated with its sentiment. Based on these results, I conclude that sentiment of equity Tweets follows past investor sentiment and thus reflects the cause of the current stock price deviation from fundamentals. The negative correlation of sentiment and 30 minute stock returns indicates predictability of a partial stock price reversion to fundamentals in the near future.
+Stock returns, succeeding the publication of a Tweet by more than 40 min, were found to be increasingly uncorrelated with the measured sentiment. This is compatible with theory of \citet{DeLong1990} which states that increased risk impedes efficient reversal of prices to the fundamentals, combined with a cumulating distortion of the expected stock price reaction due to new information and noise trader's changing beliefs over time.
+
+A simple zero-cost trading strategy that uses the VADER sentiment scores to make trading decisions, betting on a reversion of the current stock price movement in response to Tweets with strong sentiment polarity, is shown to have significantly higher returns than a naive randomized dummy strategy. As costs for commission, bid-ask spreads, limited market liquidity and taxes are neglected, it is questionable whether the sentiment-based strategy would be still profitable in practice. Finally, such limitations to high-frequency arbitrage may impede markets from responding efficiently to the sentiment embedded in financial Twitter content (cf. \citeauthor{Tetlock2007}, 2007).
+
+This analysis only considers Tweets that refer to stock tickers (e.g. \$AAPL) thus limiting the authors and readers of the Tweets to a finance affine clientele. Incorporating Tweets that refer to the company (e.g. \#Apple) on a more general level in a future analysis could reveal interesting insights on how the overall public opinion on specific companies affects their stock price. Moreover, the analysis is limited to a 10 moth time period characterized by economic growth. To gain better understanding of the interaction between sentiment of equity Tweets and asset prices, analyzing the relationship throughout a whole economic cycle, especially during recession, might be a promising approach for future research.
 
 % Declaration
 \newpage
@@ -605,13 +728,13 @@ TODO
     bachelor thesis\\[-0.3cm]
 \end{flushleft}
 \begin{center}
-    {\large Investor Sentiment on Twitter and Its \\Ability to Predict Stock Markets}\\[0.5cm]
+    {\large Investor Sentiment on Twitter and Its \\ Link to the Stock Market}\\[0.5cm]
 \end{center}
     completely by myself, and have not used sources or means without
     declaration in the text.\\[2.5cm]
 
 \begin{flushleft}
-    Karlsruhe, October 21st 2016\\[0.1cm]
+    Karlsruhe, November 8th 2016\\[0.1cm]
 \end{flushleft}
 \hspace*{9.0cm}.....................................................\\
 \hspace*{10.1cm}(Forename Surname)
@@ -627,73 +750,43 @@ TODO
 
 
 \newpage
-\addcontentsline{toc}{section}{Appendix} \nocite{*}
+\addcontentsline{toc}{section}{Appendix}
 \section*{Appendix}
 \setcounter{subsection}{0}
 \renewcommand{\thesubsection}{\Roman{subsection}}
 \renewcommand{\thesubsubsection}{\Alph{subsubsection}}
 
-\subsection{Predicting short-term stock movements with VADER - Detailed Data \label{vader_appendix}}
-
+\subsection{Further Regression Results}
+%
 \begin{table}[H]
 \centering
 \captionsetup{justification=centering}
-\begin{tabular}{l|ccc}
-$t$ &  number of trades &  estimated profit & p-value\\
-\hline
-0.01 &           95326 &      0.000048 &  3.996476e-08 \\
-0.06 &           92683 &      0.000046 &  2.266603e-07 \\
-0.11 &           89259 &      0.000053 &  1.591658e-08 \\
-0.16 &           85475 &      0.000058 &  2.913912e-09 \\
-0.21 &           78037 &      0.000059 &  6.432370e-09 \\
-0.26 &           74503 &      0.000061 &  6.548468e-09 \\
-0.31 &           61599 &      0.000059 &  3.340753e-07 \\
-0.36 &           54884 &      0.000056 &  3.437948e-06 \\
-0.41 &           43282 &      0.000091 &  1.120138e-09 \\
-0.46 &           33811 &      0.000083 &  4.977127e-07 \\
-0.51 &           28802 &      0.000081 &  5.899609e-06 \\
-0.56 &           21159 &      0.000042 &  1.863824e-02 \\
-0.61 &           16858 &      0.000032 &  8.299398e-02 \\
-0.66 &            9828 &      0.000012 &  4.329295e-01 \\
-0.71 &            6518 &      0.000025 &  3.619803e-01 \\
-0.76 &            4162 &      0.000082 &  8.147575e-02 \\
-\end{tabular}
-\caption{Evaluation results of 30 min lag trading strategy based on 150,000 equity Tweets, as described in section \ref{vader_short_term} with classification threshold $t$: 1) number of trades conducted
-2) estimated profit per trade when going short if VADER compound score $>t$ and long if sentiment score $< -t$; long/short position is hold for 30 min 3) p-value corresponding to the estimated profit\label{append_vader_short_term_30min}}
-\end{table}
+\begin{tabularx}{0.71\textwidth}{c|l|cccccc}
+ stock & parameter & coef & std error & t & P$>|t|$\\ \hline
 
-\begin{table}[H]
-\centering
-\captionsetup{justification=centering}
-\begin{tabular}{l|ccc}
-$t$ &  number of trades &  estimated profit & p-value\\
-\hline
-0.01 &        92076 &  -0.000010 &  0.111783 \\
-0.06 &        89508 &  -0.000017 &  0.046796 \\
-0.11 &        86230 &  -0.000010 &  0.124605 \\
-0.16 &        82551 &  -0.000006 &  0.212708 \\
-0.21 &        75309 &  -0.000005 &  0.259062 \\
-0.26 &        71889 &  -0.000001 &  0.374662 \\
-0.31 &        59430 &   0.000013 &  0.920303 \\
-0.36 &        52976 &   0.000003 &  0.552875 \\
-0.41 &        41750 &   0.000037 &  0.363321 \\
-0.46 &        32663 &   0.000018 &  0.914201 \\
-0.51 &        27793 &   0.000034 &  0.515765 \\
-0.56 &        20409 &   0.000004 &  0.748700 \\
-0.61 &        16233 &  -0.000011 &  0.491244 \\
-0.66 &         9493 &   0.000024 &  0.855542 \\
-0.71 &         6314 &   0.000032 &  0.783699 \\
-0.76 &         4014 &   0.000101 &  0.265303 \\
-\end{tabular}
-\caption{Evaluation results of 1 hour lag trading strategy based on 150,000 equity Tweets, as described in section \ref{vader_short_term} with classification threshold $t$: 1) number of trades conducted
-2) estimated profit per trade when going short if VADER compound score $>t$ and long if sentiment score $< -t$; long/short position is hold for 1 hour 3) p-value corresponding to the estimated profit\label{append_vader_short_term_1h}}
-\end{table}
+\multirow{2}{*}{AAPL} & Intercept    &      -0.7799  &        0.807     &    -0.967  &         0.335   \\
+& VADER score &      -0.8132  &        0.582     &    -1.398  &         0.164    \\ \hline
 
+\multirow{2}{*}{MFST} & Intercept     &       0.9374  &        0.767     &     1.223  &         0.223  \\
+& VADER score &      -0.5673  &        1.413     &    -0.402  &         0.689 \\ \hline
+
+\multirow{2}{*}{GS} & Intercept      &       0.7216  &        1.028     &     0.702  &         0.484 \\
+& VADER score &      -3.6726  &        1.821     &    -2.017  &         \textbf{0.045} \\ \hline
+
+\multirow{2}{*}{DIS} & Intercept     &       0.2806  &        1.962     &     0.143  &         0.886 \\
+& VADER score &      -2.6954  &        3.900     &    -0.691  &         0.490 \\ \hline
+
+\multirow{2}{*}{IBM} & Intercept     &       1.8096  &        2.228     &     0.812  &         0.418  \\
+& VADER score &      -4.7604  &        2.325     &    -2.047  &        \textbf{0.042 }  \\ \hline
+
+\end{tabularx}
+\caption[Regression Summary 30 Minute Returns and Tweet Sentiment of Selected Stocks]{OLS regression summary - Predicting short-term stock price responses with VADER sentiment scores: This table shows the OLS estimates of the coefficients $a$ and $\beta$ in equation \ref{OLS_formula} fitted on 234,818 Tweets and stock data, corresponding to a) Apple Inc b) Microsoft Corporation c) Goldmn Sachs Group Inc. and d) IBM Corporation, from Oct 2015 to Aug 2016 with daily error clusters. Regressand: stock return $r_i$ (in basepoints) within 30 minutes after a Tweet $i$ is posted. Regressor: VADER compound sentiment score $s_i$ of Tweet $i$ \label{vader_short_term_30min_firms}}
+\end{table}
 
 \subsection{Tree-Structured Long Short-Term Memory Networks}
 The basic idea of tree-structured LSTM networks is described in section \ref{tree_lstm}. Based on constituency parse trees, a tree-shaped network of LSTM units is build. Word embeddings that represent piece of text, i.e. a Tweet, are propagated trough the tree-structured network in a bottom-up fashion.
 
-To account for the tree structure, slight modifications in the architecture of LSTM units that were originally designed for recurrent neural networks by \citet{Hochreiter1998} are required. With regard to that, \citet{Tai2015} propose two extensions of the original architecture: Child-Sum Tree-LSTMs and N-ary Tree-LSTMs. Both variants allow a LSTM unit to incorporate inputs from an arbitrary number of child nodes.
+To account for the tree structure, slight modifications in the architecture of LSTM units, originally designed for recurrent neural networks by \citet{Hochreiter1998}, are required. With regard to that, \citet{Tai2015} propose two extensions of the original architecture: Child-Sum Tree-LSTMs and N-ary Tree-LSTMs. Both variants allow a LSTM unit to incorporate inputs from an arbitrary number of child nodes.
 
 
 \subsubsection{Child-Sum Tree-LSTMs}
@@ -733,7 +826,7 @@ where $k \in C(j)$
 \captionsetup{justification=centering}
 \centering
 \includegraphics[width=0.6\textwidth]{graphics/tree_lstm.png}
-\caption{Tree-structured LSTM network with arbitrary branching factor; Source: \citet{Tai2015} \label{fig:sst}}
+\caption[Scematical Illustration Tree-structured LSTM network]{Tree-structured LSTM network with arbitrary branching factor; Source: \citet{Tai2015} \label{fig:sst}}
 \end{figure}
 
 
@@ -794,13 +887,13 @@ Basic concept of of SGD is to perform gradient decent steps for each data item i
 $$
 \theta_t = \theta_t-1 - \eta ~ \nabla J(\theta; y^{(k)}, \{x\}^{(k)})
 $$
-with $J(\theta; y^{(k)}, \{x\}^{(k)}) = \text{log } \hat{p}_{\theta} \left(y^{(k)} | \{x\}^{(k)} \right) + \frac{\lambda}{2} \vert \vert \theta \vert \vert^2_2$ and $\eta$ as training rate.
+with $J(\theta; y^{(k)}, \{x\}^{(k)}) = \text{log } \hat{p}_{\theta} \left(y^{(k)} | \{x\}^{(k)} \right) + \frac{\lambda}{2} \vert \vert \theta \vert \vert^2_2$ and $\eta$ as learning rate.
 
 \begin{figure}
 \captionsetup{justification=centering}
 \centering
 \includegraphics[width=0.8\textwidth]{graphics/comp_momentum_adadelta.pdf}
-\caption{Training performance comparison of optimizers: Average training cross-entropy loss troughout the first 10 training epochs when training the tree-structure LSTM model on the SST utilizing a) SGD with momentum method and gradient clipping b) AdaDelta with gradient clipping\label{fig:comp_momentum_adadelta}}
+\caption[Training Performance of Different Optimizers]{Training performance comparison of optimizers: Average training cross-entropy loss troughout the first 10 training epochs when training the tree-structure LSTM model on the SST utilizing a) SGD with momentum method and gradient clipping b) AdaDelta with gradient clipping\label{fig:comp_momentum_adadelta}}
 \end{figure}
 
 A downside of classical SGD is the fixed learning rate. On the one hand it is hard to find the optimal learning rate, on the other hand adjusting the learning rate during training by e.g. annealing can significantly improve the performance of the optimizer. With regard to the learning rate problem various adaptive learning rate methods such as Adagrad, Adam or RMSprop have been introduced. A technique that was shown to be particularly efficient is Adadelta \citep{Zeiler2012}. It is an extension of Adagrad and uses a recursively defined decaying average of squared gradient and instead the average over all previous squared gradients $g_t^2$. The running average $E[g^2]_t$ is defined as follows:
@@ -822,102 +915,12 @@ $$
 \theta_t = \theta_{t-1} + \Delta \theta_t 
 $$
 
-I compare the performance of AdaDelta to SGD with momentum method during training of the tree-structure LSTM network on the SST data. As illustrated in figure \ref{fig:comp_momentum_adadelta}, the use of AdaDelta drastically enhances the process of training.
+I compare the performance of AdaDelta to SGD with momentum method during training of the tree-structure LSTM network on the SST data. As illustrated in Figure \ref{fig:comp_momentum_adadelta}, the use of AdaDelta drastically enhances the process of training.
 
 
 \subsection{Implementation and Infrastructure}
-The tree-structured LSTM is mainly implemented with the Python library Theano. This library helps to evaluate mathematical expressions efficiently trough the use of a GPU. To make the computation power the GPU accessible I use Nvidia's GPU toolkit CUDA.
+The tree-structured LSTM is mainly implemented with the Python library Theano. This library helps to efficiently evaluate mathematical expressions with high-dimensional tensors trough the use of a Graphical Processing Units (GPU). To make the computation power the GPU accessible I use Nvidia's GPU toolkit CUDA.
 
 As training can take several days up to weeks on a personal computer, I run the training process on an Amazon Web Services EC2 GPU instance (g2.2xlarge). Although computational intensive processes such as back propagation could be accelerated significantly on a high-end GPU, one training session still took about three days.
-
-\subsection{Confusion Matrices from Validation}
-\begin{table}
-\centering
-\captionsetup{justification=centering}
-\begin{tabular}{ |l|l|c|c| }
-\hline
-Training Data & metric & 30 min lag & 1 hour lag \\ \hline
-\multirow{4}{*}{SST \& Sanders Corpus} & accuracy & $0.4867$ & $0.0000$ \\
- & F1 score & $0.3534$ & $0.0000$ \\
- & estimated profit & $9.42* 10^{-6}$ & $0.0000* 10^{-6}$ \\
- & p-val profit & $0.2392$ & 0.00 \\ \hline
-\multirow{4}{*}{Collected Tweets (30 min lag label)} & accuracy & $0.3744$ & \\
- & F1 score & $0.3777$ &  \\
- & estimated profit & $3.2 * 10^{-7}$ & \\
- & p-val profit & $0.2995$ &  \\ \hline
-\multirow{4}{*}{Collected Tweets (1h lag label)} & accuracy & & $0.0000$  \\
- & F1 score & & $0.0000$ \\
- & estimated profit & & $0.0000* 10^{-6}$ \\
- & p-val profit & & 0.00 \\ \hline
-\end{tabular}
-\caption{Validation results based on DEVELOPMENT SPLIT\label{table:tree_lstm_validation}}
-\end{table}
-
-
-\begin{table}
-\centering
-\captionsetup{justification=centering}
- \begin{tabular}{|c|l|c|c|c|}
- \cline{1-5}
- \multicolumn{2}{|c|}{} & \multicolumn{3}{c|}{predicted label} \\ \cline{3-5}
- \multicolumn{2}{|c|}{} & \multicolumn{1}{c|}{negative} & \multicolumn{1}{c|}{neutral} & \multicolumn{1}{c|}{positive} \\
- \hline
- \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{label}}} & negative & 7160 & 5520 & 2987 \\
- & neutral & 7160 & 11689 & 5766 \\
- & positive & 3629 & 5704 & 2924\\
- \hline
- \end{tabular}
-\caption{Confusion matrix based on 30 min lag test split - Tree LSTM model trained on 150,000 Tweets labelled according to 30 min stock price response (see \ref{labelling}) \label{table:conf_matrix_1}}
-\end{table}
-
-
-\begin{table}
-\centering
-\captionsetup{justification=centering}
- \begin{tabular}{|c|l|c|c|c|}
- \cline{1-5}
- \multicolumn{2}{|c|}{} & \multicolumn{3}{c|}{predicted label} \\ \cline{3-5}
- \multicolumn{2}{|c|}{} & \multicolumn{1}{c|}{negative} & \multicolumn{1}{c|}{neutral} & \multicolumn{1}{c|}{positive} \\
- \hline
- \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{label}}} & negative & 741 & 5546 & 547\\
- & neutral & 1221 & 11231 & 1031\\
- & positive & 637 & 5546 & 544\\
- \hline
- \end{tabular}
-\caption{Confusion matrix based on 30 min lag developement split - Tree LSTM model trained on Standord Sentiment Treebank and Sanders Twitter Sentiment Corpus \label{table:conf_matrix_1}}
-\end{table}
-
-\begin{table}
-\centering
-\captionsetup{justification=centering}
- \begin{tabular}{|c|l|c|c|c|}
- \cline{1-5}
- \multicolumn{2}{|c|}{} & \multicolumn{3}{c|}{predicted label} \\ \cline{3-5}
- \multicolumn{2}{|c|}{} & \multicolumn{1}{c|}{negative} & \multicolumn{1}{c|}{neutral} & \multicolumn{1}{c|}{positive} \\
- \hline
- \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{label}}} & negative & 435 & 11724 & 145 \\
- & neutral & 860 & 23538 & 217 \\
- & positive & 426 & 11633 & 198 \\
- \hline
- \end{tabular}
-\caption{Confusion matrix based on 30 min lag test split - Tree LSTM model trained on Standord Sentiment Treebank and Sanders Twitter Sentiment Corpus \label{table:conf_matrix_1}}
-\end{table}
-
- 
-\begin{table}
-\centering
-\captionsetup{justification=centering}
- \begin{tabular}{|c|l|c|c|c|}
- \cline{1-5}
- \multicolumn{2}{|c|}{} & \multicolumn{3}{c|}{predicted label} \\ \cline{3-5}
- \multicolumn{2}{|c|}{} & \multicolumn{1}{c|}{negative} & \multicolumn{1}{c|}{neutral} & \multicolumn{1}{c|}{positive} \\
- \hline
- \parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{label}}} & negative & 3012 & 2310 & 1512 \\
- & neutral & 3825 & 6718 & 2940\\
- & positive & 1956 & 2301 & 2470\\
- \hline
- \end{tabular}
-\caption{Confusion matrix based on 30 min lag developement split - Tree LSTM model trained on 150,000 Tweets labelled according to 30 min stock price response (see \ref{labelling}) \label{table:conf_matrix_1}}
-\end{table}
 
 \end{document}
